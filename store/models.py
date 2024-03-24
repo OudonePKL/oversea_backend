@@ -90,27 +90,6 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.name}"
 
-# Cart
-class Cart(models.Model):
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Cart {self.pk} - User: {self.user.email}"
-
-class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    store = models.ForeignKey(StoreModel, on_delete=models.CASCADE)
-    product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, related_name='cartitem')
-    quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    color = models.CharField(max_length=50)
-    size = models.CharField(max_length=50)
-
-    def __str__(self):
-        return f"CartItem {self.pk} - Product: {self.product.name}, Quantity: {self.quantity}"
-
-
 # Old one
 class OrderModel(models.Model):
     class Meta:
@@ -138,7 +117,6 @@ class Order(models.Model):
     )
 
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    store = models.ForeignKey(StoreModel, on_delete=models.CASCADE)
     tel = models.CharField(max_length=20)
     total_prices = models.DecimalField(max_digits=10, decimal_places=2)
     account_name = models.CharField(max_length=100, null=True, blank=True)
@@ -163,6 +141,7 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"OrderItem {self.pk} - Product: {self.product.name}, Quantity: {self.quantity}"
 
+# old review
 class ReviewModel(models.Model):
     class Meta:
         db_table = "review"
@@ -180,6 +159,16 @@ class ReviewModel(models.Model):
     def __str__(self):
         return str(self.goods.name)
 
+# # new review
+class Review(models.Model):
+    product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, related_name='review')
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review for {self.product.name} by {self.user.email}"
 
 class BookmarkModel(models.Model):
     class Meta:
@@ -205,7 +194,6 @@ class PolicyModel(models.Model):
 
     category = models.IntegerField(null=True, blank=True, default=1, verbose_name='type')
     content = models.TextField(null=True, blank=True, default='', verbose_name='detail')
-
 
 
 # Bank account

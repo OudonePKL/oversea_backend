@@ -6,10 +6,12 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from store.models import (
     StoreModel, GoodsModel, ReviewModel, OrderModel, 
     ImageModel, SizeModel, ColorModel, CategoryModel, 
-    ProductImage, Order, OrderItem, Cart, CartItem,
-    BankAccount,
+    ProductImage, Order, OrderItem, 
+    BankAccount, Review
     )
 from users.models import UserModel
+
+from users.serializers import UserSerializer
 
 
 def format_with_commas(n):
@@ -54,7 +56,8 @@ class GoodsSerializer(serializers.ModelSerializer):
         return str(format_with_commas(obj.price))
 
     def get_review_total(self, obj):
-        review_total = ReviewModel.objects.filter(goods_id=obj.id).count()
+        # review_total = ReviewModel.objects.filter(goods_id=obj.id).count()
+        review_total = Review.objects.filter(product_id=obj.id).count()
         return review_total
 
     def get_store_address(self, obj):
@@ -132,39 +135,52 @@ class StoreSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+# old review
+# class ReviewSerializer(serializers.ModelSerializer):
+#     profile_image = serializers.SerializerMethodField()
+#     created_at = serializers.SerializerMethodField()
+#     nickname = serializers.SerializerMethodField()
+
+#     def validate(self, attrs):
+#         review = attrs.get("review")
+#         if review:
+#             if len(review) < 10:
+#                 raise ValidationError("Please register your review with at least 10 characters.")
+#         return attrs
+
+#     def get_profile_image(self, obj):
+#         user = UserModel.objects.get(id=obj.user.id)
+#         if not user.profile_image:
+#             return None
+#         else:
+#             return user.profile_image.url
+
+#     def get_created_at(self, obj):
+#         return obj.created_at.strftime("%Y.%m.%d")
+
+#     def get_nickname(self, obj):
+#         return obj.user.nickname
+
+#     class Meta:
+#         # model = ReviewModel
+#         model = Review
+#         exclude = ["updated_at", "product"]
+#         extra_kwargs = {
+#             "user": {"required": False},
+#             "product": {"required": False},
+#         }
+
+# new review
 class ReviewSerializer(serializers.ModelSerializer):
-    profile_image = serializers.SerializerMethodField()
-    created_at = serializers.SerializerMethodField()
-    nickname = serializers.SerializerMethodField()
-
-    def validate(self, attrs):
-        review = attrs.get("review")
-        if review:
-            if len(review) < 10:
-                raise ValidationError("Please register your review with at least 10 characters.")
-        return attrs
-
-    def get_profile_image(self, obj):
-        user = UserModel.objects.get(id=obj.user.id)
-        if not user.profile_image:
-            return None
-        else:
-            return user.profile_image.url
-
-    def get_created_at(self, obj):
-        return obj.created_at.strftime("%Y.%m.%d")
-
-    def get_nickname(self, obj):
-        return obj.user.nickname
-
+    user = UserSerializer()
     class Meta:
-        model = ReviewModel
-        exclude = ["updated_at", "goods"]
-        extra_kwargs = {
-            "user": {"required": False},
-            "goods": {"required": False},
-        }
+        model = Review
+        fields = '__all__'
 
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'   
 
 class GoodsDetailSerializer(serializers.ModelSerializer):
     """
@@ -194,7 +210,8 @@ class GoodsDetailSerializer(serializers.ModelSerializer):
         return obj.store.id
 
     def get_review_set(self, obj):
-        review = ReviewModel.objects.filter(goods_id=obj.id).order_by("-created_at")
+        # review = ReviewModel.objects.filter(goods_id=obj.id).order_by("-created_at")
+        review = Review.objects.filter(product_id=obj.id).order_by("-created_at")
         serializer = ReviewSerializer(review, many=True)
         return serializer.data
 
@@ -278,106 +295,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = '__all__'
-
-# Cart
-# Cart
-class CartItemSerializer(serializers.ModelSerializer):
-    product = GoodsSerializer()
-    class Meta:
-        model = CartItem
-        fields = ['id', 'store', 'product', 'quantity', 'price', 'color', 'size']
-
-class CartSerializer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField()
-
-    def get_items(self, obj):
-        cart_items = CartItem.objects.filter(cart=obj)
-        serializer = CartItemSerializer(cart_items, many=True)
-        return serializer.data
-
-    class Meta:
-        model = Cart
-        fields = ['id', 'user', 'created_at', 'items']
-
-class CartItemCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CartItem
-        fields = ['store', 'product', 'quantity', 'price', 'color', 'size']
-
-class CreateCartSerializer(serializers.ModelSerializer):
-    items = CartItemCreateSerializer(many=True, write_only=True)
-
-    def create(self, validated_data):
-        cart_items_data = validated_data.pop('items')
-        cart = Cart.objects.create(**validated_data)
-        for cart_item_data in cart_items_data:
-            CartItem.objects.create(cart=cart, **cart_item_data)
-        return cart
-
-    class Meta:
-        model = Cart
-        fields = ['id', 'user', 'created_at', 'items']
-
-class CartItemUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CartItem
-        fields = ['id', 'product', 'quantity', 'price', 'color', 'size']
-
-
-class CartUpdateSerializer(serializers.ModelSerializer):
-    items = CartItemUpdateSerializer(many=True, write_only=True)
-
-    def update(self, instance, validated_data):
-        cart_items_data = validated_data.pop('items', [])
-
-        for cart_item_data in cart_items_data:
-            # Retrieve the cart item ID if provided
-            cart_item_id = cart_item_data.get('id', None)
-            
-            if cart_item_id:
-                # If cart item ID is provided, update the existing cart item
-                cart_item = CartItem.objects.get(id=cart_item_id, cart=instance)
-                # Update the cart item attributes
-                for attr, value in cart_item_data.items():
-                    setattr(cart_item, attr, value)
-                cart_item.save()
-            else:
-                # If no cart item ID is provided, create a new cart item
-                CartItem.objects.create(cart=instance, **cart_item_data)
-
-        return instance
-
-    class Meta:
-        model = Cart
-        fields = ['id', 'user', 'created_at', 'items']
-
         
-# class OrderSerializer(serializers.ModelSerializer):
-#     ordered_at = serializers.SerializerMethodField()
-#     goods_name = serializers.SerializerMethodField()
-#     store_name = serializers.SerializerMethodField()
-#     user_name = serializers.SerializerMethodField()
-
-#     def get_ordered_at(self, obj):
-#         return obj.ordered_at.strftime("%Y.%m.%d")
-
-#     def get_goods_name(self, obj):
-#         return obj.goods.name
-
-#     def get_store_name(self, obj):
-#         return obj.goods.store.name
-
-#     def get_user_name(self, obj):
-#         return obj.user.nickname
-
-#     class Meta:
-#         model = OrderModel
-#         fields = "__all__"
-
-#         extra_kwargs = {
-#             "user": {"required": False},
-#             "goods": {"required": False},
-#         }
 
 # Order
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -396,7 +314,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'store', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items']
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items']
 
 
 class OrderItemCreateSerializer(serializers.ModelSerializer):
@@ -416,13 +334,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'store', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items']
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items']
 
 
 class PendingOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'store', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
                   'branch', 'created_at', 'status', 'items']
 
     def to_representation(self, instance):
@@ -435,7 +353,7 @@ class PendingOrderSerializer(OrderSerializer):
 class ProcessingOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'store', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
                   'branch', 'created_at', 'status', 'items']
 
     def to_representation(self, instance):
@@ -447,7 +365,7 @@ class ProcessingOrderSerializer(OrderSerializer):
 class DeliveredOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'store', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
                   'branch', 'created_at', 'status', 'items']
 
     def to_representation(self, instance):
@@ -460,7 +378,7 @@ class DeliveredOrderSerializer(OrderSerializer):
 class ShippedOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'store', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
                   'branch', 'created_at', 'status', 'items']
 
     def to_representation(self, instance):
@@ -515,7 +433,8 @@ class OnlyStoreGoodsSerializer(serializers.ModelSerializer):
         return obj.store.name
 
     def get_review_set(self, obj):
-        review = ReviewModel.objects.filter(goods_id=obj.id).order_by("-created_at")
+        # review = ReviewModel.objects.filter(goods_id=obj.id).order_by("-created_at")
+        review = Review.objects.filter(product_id=obj.id).order_by("-created_at")
         serializer = OnlyStoreReviewSerializer(review, many=True)
         return serializer.data
 

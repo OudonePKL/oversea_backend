@@ -29,8 +29,8 @@ from .models import (
     ColorModel,
     ProductImage,
     Order, OrderItem,
-    Cart, CartItem,
-    BankAccount
+    BankAccount,
+    Review
 )
 from .serializers import (
     StoreSerializer,
@@ -44,9 +44,11 @@ from .serializers import (
     GoodsCreateSerializer,
     CategorySerializer,
     CreateProductSerializer, UpdateProductSerializer,
-    CartSerializer, CreateCartSerializer, CartUpdateSerializer,
-    BankAccountSerializer, BankAccountSerializer2
+    BankAccountSerializer, BankAccountSerializer2,
+    ReviewCreateSerializer,
 )
+
+from .permissions import IsOwnerOrReadOnly
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -423,7 +425,7 @@ class GoodsPatchView(APIView):
             goods.delete()
         return Response({"message": "success"}, status=status.HTTP_200_OK)
 
-
+# Old review
 class ReviewView(APIView):
     # permission_classes = [permissions.IsAuthenticated]
     """
@@ -468,6 +470,46 @@ class ReviewView(APIView):
         review.delete()
         return Response({"message": "success"}, status=status.HTTP_200_OK)
 
+# new review
+class ReviewList(generics.ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+class ReviewCreate(generics.ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewCreateSerializer
+
+class ReviewRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewCreateSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+
+class UserReviewListView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Review.objects.filter(user_id=user_id)
+
+class ProductReviewListView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        product_id = self.kwargs['product_id']
+        return Review.objects.filter(product_id=product_id)
+
+# class ReviewDeleteView(generics.DestroyAPIView):
+#     def delete(self, request, pk, format=None):
+#         try:
+#             review = Review.objects.get(pk=pk)
+#         except Review.DoesNotExist:
+#             return Response({"message": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+#         review.delete()
+
+#         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
+
+    
 
 class CheckReview(APIView):
     def post(self, request, pk):
@@ -495,71 +537,6 @@ def review_form(request, pk):
 
 def review_list(request, pk):
     return render(request, 'store/review_list.html', {"goods_id": pk})
-
-# Cart
-class CartListView(generics.ListCreateAPIView):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
-
-class CartDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
-
-class UserCartListView(generics.ListAPIView):
-    serializer_class = CartSerializer
-
-    def get_queryset(self):
-        user_id = self.kwargs['user_id']
-        return Cart.objects.filter(user_id=user_id)
-
-class CartCreateAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = CreateCartSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "success"},status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class CartUpdateAPIView(APIView):
-    def put(self, request, pk):
-        try:
-            cart = Cart.objects.get(pk=pk)
-        except Cart.DoesNotExist:
-            return Response({'error': 'Cart not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = CartUpdateSerializer(cart, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class CartDeleteView(generics.DestroyAPIView):
-    def delete(self, request, pk, format=None):
-        try:
-            cart = Cart.objects.get(pk=pk)
-        except Cart.DoesNotExist:
-            return Response({"message": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Delete related CartItem instances
-        CartItem.objects.filter(cart_id=cart).delete()
-
-        # Delete the Cart instance
-        cart.delete()
-
-        return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
-
-class CartItemDeleteView(generics.DestroyAPIView):
-    def delete(self, request, pk, format=None):
-        try:
-            cartItme = CartItem.objects.get(pk=pk)
-        except CartItem.DoesNotExist:
-            return Response({"message": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Delete the Cart instance
-        cartItme.delete()
-
-        return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
-
 
 # Old one
 class OrderView(APIView):
@@ -664,67 +641,68 @@ class OrderDeleteView(generics.DestroyAPIView):
 
         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
     
-# class PendingOrderListAPIView(generics.ListAPIView):
-#     queryset = Order.objects.filter(status='Pending')
-#     serializer_class = PendingOrderSerializer
-
-# class ProcessingOrderListAPIView(generics.ListAPIView):
-#     queryset = Order.objects.filter(status='Processing')
-#     serializer_class = ProcessingOrderSerializer
-
-# class ShippedOrderListAPIView(generics.ListAPIView):
-#     queryset = Order.objects.filter(status='Shipped')
-#     serializer_class = ShippedOrderSerializer
-
-# class DeliveredOrderListAPIView(generics.ListAPIView):
-#     queryset = Order.objects.filter(status='Delivered')
-#     serializer_class = DeliveredOrderSerializer
-
-# class DeliveredOrderListAPIView(generics.ListAPIView):
-#     serializer_class = DeliveredOrderSerializer
-
-#     def get_queryset(self):
-#         return Order.objects.filter(status='Delivered')
-    
 class PendingOrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.filter(status='Pending')
     serializer_class = PendingOrderSerializer
 
-    def get_queryset(self):
-        store_id = self.request.query_params.get('store_id')
-        if store_id:
-            return Order.objects.filter(status='Pending', store_id=store_id)
-        else:
-            return Order.objects.none()
-
 class ProcessingOrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.filter(status='Processing')
     serializer_class = ProcessingOrderSerializer
 
-    def get_queryset(self):
-        store_id = self.request.query_params.get('store_id')
-        if store_id:
-            return Order.objects.filter(status='Processing', store_id=store_id)
-        else:
-            return Order.objects.none()
-
 class ShippedOrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.filter(status='Shipped')
     serializer_class = ShippedOrderSerializer
 
-    def get_queryset(self):
-        store_id = self.request.query_params.get('store_id')
-        if store_id:
-            return Order.objects.filter(status='Shipped', store_id=store_id)
-        else:
-            return Order.objects.none()
+class DeliveredOrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.filter(status='Delivered')
+    serializer_class = DeliveredOrderSerializer
 
 class DeliveredOrderListAPIView(generics.ListAPIView):
     serializer_class = DeliveredOrderSerializer
 
     def get_queryset(self):
-        store_id = self.request.query_params.get('store_id')  # Assuming you pass store_id as a query parameter
-        if store_id:
-            return Order.objects.filter(status='Delivered', store_id=store_id)
-        else:
-            return Order.objects.none()  # Return an empty queryset if store_id is not provided 
+        return Order.objects.filter(status='Delivered')
+    
+
+# class PendingOrderListAPIView(generics.ListAPIView):
+#     serializer_class = PendingOrderSerializer
+
+#     def get_queryset(self):
+#         store_id = self.request.query_params.get('store_id')
+#         if store_id:
+#             return Order.objects.filter(status='Pending', store_id=store_id)
+#         else:
+#             return Order.objects.none()
+
+# class ProcessingOrderListAPIView(generics.ListAPIView):
+#     serializer_class = ProcessingOrderSerializer
+
+#     def get_queryset(self):
+#         store_id = self.request.query_params.get('store_id')
+#         if store_id:
+#             return Order.objects.filter(status='Processing', store_id=store_id)
+#         else:
+#             return Order.objects.none()
+
+# class ShippedOrderListAPIView(generics.ListAPIView):
+#     serializer_class = ShippedOrderSerializer
+
+#     def get_queryset(self):
+#         store_id = self.request.query_params.get('store_id')
+#         if store_id:
+#             return Order.objects.filter(status='Shipped', store_id=store_id)
+#         else:
+#             return Order.objects.none()
+
+# class DeliveredOrderListAPIView(generics.ListAPIView):
+#     serializer_class = DeliveredOrderSerializer
+
+#     def get_queryset(self):
+#         store_id = self.request.query_params.get('store_id')  # Assuming you pass store_id as a query parameter
+#         if store_id:
+#             return Order.objects.filter(status='Delivered', store_id=store_id)
+#         else:
+#             return Order.objects.none()  # Return an empty queryset if store_id is not provided 
 
 
 class SearchView(APIView):

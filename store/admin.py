@@ -11,7 +11,7 @@ from .models import (
     Order, OrderItem,
     ProductImage,
     BankAccount,
-    Cart, CartItem
+    Review,
 )
 
 
@@ -113,5 +113,4 @@ admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(ProductImage)
 admin.site.register(BankAccount)
-admin.site.register(Cart)
-admin.site.register(CartItem)
+admin.site.register(Review)

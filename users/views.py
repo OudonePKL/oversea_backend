@@ -229,10 +229,11 @@ class LoginView(TokenObtainPairView):
         if serializer.is_valid():
             token = serializer.validated_data
             user = UserModel.objects.get(email=data.get('email'))
+            is_admin = user.is_admin
             store = StoreModel.objects.filter(seller=user).first()  # Use .first() to get the first object.
             store_id = store.id if store else False
             origin_store_name = store.name if store else False
-            return Response(data={'token': token, "user_id": user.id, "store_id": store_id,
+            return Response(data={'token': token, "user_id": user.id, "is_admin": is_admin, "store_id": store_id,
                                   "user_name": user.nickname,
                                   "origin_store_name": origin_store_name,
                                   "email": user.email if user.email else False,

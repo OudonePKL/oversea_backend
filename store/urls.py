@@ -24,14 +24,7 @@ urlpatterns = [
         "goods/<int:goods_id>", views.GoodsView.as_view(), name="goods_detail"
     ),  # Product related
     path("review/<int:pk>", views.ReviewView.as_view(), name="review"),  # Review related
-    # Cart
-    path('carts', views.CartListView.as_view(), name='cart-list'),
-    path('cart/<int:pk>', views.CartDetailView.as_view(), name='cart-detail'),
-    path('user/<int:user_id>/cart', views.UserCartListView.as_view(), name='user-cart-list'),
-    path('cart/create', views.CartCreateAPIView.as_view(), name='create_cart'),
-    path('cart/update/<int:pk>', views.CartUpdateAPIView.as_view(), name='cart-update'),
-    path('cart/delete/<int:pk>', views.CartDeleteView.as_view(), name='delete-cart'),
-    path('cart/item/delete/<int:pk>', views.CartItemDeleteView.as_view(), name='delete-cart-item'),
+    
     # old order
     path("order", views.OrderView.as_view(), name="order"),  # Order related
     # new order
@@ -51,6 +44,15 @@ urlpatterns = [
     # Template render only
     path("review/form/<int:pk>", views.review_form, name="review_form"),
     path("review/list/<int:pk>", views.review_list, name="review_list"),
+    # # Review
+    path('reviews', views.ReviewList.as_view(), name='review-list'),
+    path('review/create', views.ReviewCreate.as_view(), name='review-create'),
+    path('review/<int:pk>', views.ReviewRetrieveUpdateDestroy.as_view(), name='review-detail'),
+    # path('review/update/<int:pk>', views.ReviewRetrieveUpdateDestroy.as_view(), name='review-update'),
+    # path('user/<int:user_id>/review', views.UserReviewListView.as_view(), name='user-reviews-list'),
+    path('product/<int:product_id>/review', views.ProductReviewListView.as_view(), name='product-reviews-list'),
+    # path('review/delete/<int:pk>', views.ReviewDeleteView.as_view(), name='delete-reviews'),
+
     path("goods/list", views.goods_list, name="goods_list"),
     path("goods/detail/<int:goods_id>", views.goods_detail, name="goods_detail"),
     path("order/list", views.order_list, name="order_list"),
