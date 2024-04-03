@@ -289,7 +289,8 @@ class StoreView(APIView):
                                 format, imgstr = image_data.split(';base64,')
                                 ext = format.split('/')[-1]
                                 file_data = ContentFile(base64.b64decode(imgstr), name=f'{uuid.uuid4()}.{ext}')
-                                ImageModel.objects.create(goods=instance, image=file_data)
+                                ProductImage.objects.create(product=instance, image=file_data)
+                                # ImageModel.objects.create(goods=instance, image=file_data)
             return Response({"message": "The product has been registered."}, status=status.HTTP_201_CREATED)
         return Response({"message": "A problem has occurred."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -341,12 +342,28 @@ class CreateProductAPIView(APIView):
         responses={200: "Success"},
     )
 
-    def post(self, request, format=None):
-        serializer = CreateProductSerializer(data=request.data)
-        if serializer.is_valid():
-            product = serializer.save()
-            return Response({"message": "success"},status=status.HTTP_201_CREATED)
-        return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, store_id, format=None):
+    #     request.data['store'] = store_id  # Assign store_id to the request data
+    #     serializer = CreateProductSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         product = serializer.save()
+    #         return Response({"message": "success"},status=status.HTTP_201_CREATED)
+    #     return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, store_id, format=None):
+        products_data = request.data.get('goods_set')  # Get the list of products from request data
+        created_products = []
+
+        for product_data in products_data:
+            product_data['store'] = store_id  # Assign store_id to each product data
+            serializer = CreateProductSerializer(data=product_data)
+
+            if serializer.is_valid():
+                product = serializer.save()
+                created_products.append(product)
+            else:
+                return Response({"message": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "success", "products": [str(product) for product in created_products]}, status=status.HTTP_201_CREATED)
     
 class UpdateProductAPIView(APIView):
     def put(self, request, pk, format=None):
@@ -496,7 +513,7 @@ class ProductReviewListView(generics.ListAPIView):
 
     def get_queryset(self):
         product_id = self.kwargs['product_id']
-        return Review.objects.filter(product_id=product_id)
+        return Review.objects.filter(product_id=product_id)  
 
 # class ReviewDeleteView(generics.DestroyAPIView):
 #     def delete(self, request, pk, format=None):
