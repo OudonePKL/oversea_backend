@@ -20,7 +20,7 @@ def format_with_commas(n):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryModel
-        fields = '__all__'
+        fields = ('id', 'name', 'image')
 
 
 class GoodsSerializer(serializers.ModelSerializer):

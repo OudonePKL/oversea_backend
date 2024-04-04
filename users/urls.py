@@ -6,6 +6,11 @@ from users import views
 app_name = 'users'
 
 urlpatterns = [
+    path("", views.UserListView.as_view(), name='user-list'),
+    path("<int:pk>", views.UserDetailsView.as_view(), name='user-details'),
+    path("current", views.CurrentUserView.as_view(), name='current-user'),
+    path('users/<int:id>/delete/', views.UserDetailsView.as_view(), name='user-delete'),
+
     # join the membership
     path("signup", views.SignupView.as_view(), name="signup"),
     path("seller-signup", views.SellerSignup.as_view(), name="seller_google_signup"),

@@ -41,6 +41,7 @@ from django.shortcuts import render
 import smtplib
 import jwt
 from django.conf import settings
+from rest_framework import generics, permissions
 
 
 # Send email
@@ -684,3 +685,27 @@ def term_render(request):
 
 def policy_render(request):
     return render(request, 'policy.html')
+
+
+class UserListView(generics.ListAPIView):
+    queryset = UserModel.objects.all()
+    serializer_class = UserSerializer
+    # permission_classes = [permissions.IsAuthenticated]  # Example: Require authentication
+
+class UserDetailsView(generics.RetrieveAPIView):
+    queryset = UserModel.objects.all()
+    serializer_class = UserSerializer
+    # permission_classes = [permissions.IsAuthenticated]  # Example: Require authentication
+    lookup_field = 'id'
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class CurrentUserView(APIView):
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

@@ -11,6 +11,8 @@ router.register(r'bank-accounts/detail', BankAccountViewSet)
 
 urlpatterns = [
     path("categories", views.CategoryListCreate.as_view(), name='category-list-create'),
+    path("categories/<int:pk>", views.CategoryDetail.as_view(), name='category-detail'),
+    path("all-stores", views.StoreViewSet.as_view({'get': 'list'}), name='store-list'),
     path("", views.GoodsView.as_view(), name="goods_list"),  # Product list related
     path("detail/<int:goods_id>", views.GoodsView.as_view(), name="goods_detail"),  # Product list related
     # path("<int:store_id>", views.CreateProductAPIView.as_view(), name="store"),  # Store Related Related

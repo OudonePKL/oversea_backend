@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 from django.http import JsonResponse
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter
+from django.http import Http404
 
 from .form import ReviewForm
 from .models import (
@@ -86,23 +87,67 @@ def order_list(request):
 def store_setting(request):
     return render(request, 'store/admin.html')
 
-class CategoryListCreate(generics.ListCreateAPIView):
-    # queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+# class CategoryListCreate(generics.ListCreateAPIView):
+#     # queryset = Category.objects.all()
+#     serializer_class = CategorySerializer
 
-    def get_queryset(self):
-        # Get the original queryset
-        queryset = CategoryModel.objects.all()
-        # # Exclude specific data, for example, 'Food'
-        # queryset = queryset.exclude(name='Food')
-        return queryset
+#     def get_queryset(self):
+#         # Get the original queryset
+#         queryset = CategoryModel.objects.all()
+#         # # Exclude specific data, for example, 'Food'
+#         # queryset = queryset.exclude(name='Food')
+#         return queryset
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = CategorySerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"message": "success"}, status=status.HTTP_201_CREATED)
+#         return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CategoryListCreate(generics.ListCreateAPIView):
+    queryset = CategoryModel.objects.all()
+    serializer_class = CategorySerializer
 
     def post(self, request, *args, **kwargs):
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "success"}, status=status.HTTP_201_CREATED)
-        return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CategoryModel.objects.all()
+    serializer_class = CategorySerializer
+
+    def get_object_or_404(self, queryset=None):
+        try:
+            return super().get_object()
+        except Http404:
+            raise Http404({"message": "Category not found"})
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object_or_404()
+        serializer = CategorySerializer(instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object_or_404()
+        serializer = CategorySerializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object_or_404()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
 
 class GoodsView2(APIView):
     @swagger_auto_schema(tags=["View product list and details"], responses={200: "Success"})
@@ -240,6 +285,10 @@ class GoodsView(APIView):
                 result['is_ordered'] = False
             return Response(result, status=200)
 
+class StoreViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = StoreModel.objects.all()
+    serializer_class = StoreSerializer
+    
 class StoreView(APIView):
     # permission_classes = [IsSeller]
 
