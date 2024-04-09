@@ -172,7 +172,7 @@ class StoreSerializer(serializers.ModelSerializer):
 
 # new review
 class ReviewSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    # user = UserSerializer()
     class Meta:
         model = Review
         fields = '__all__'
@@ -314,7 +314,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items']
+        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items', 'china_url', 'lao_url']
 
 
 class OrderItemCreateSerializer(serializers.ModelSerializer):
@@ -403,6 +403,30 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['status']
+
+class OrderUpdateChinaUrlSerializer(serializers.ModelSerializer):
+    def update(self, instance, validated_data):
+        # Update order fields
+        instance.china_url = validated_data.get('china_url', instance.china_url)
+        instance.save()
+
+        return instance
+
+    class Meta:
+        model = Order
+        fields = ['china_url']
+
+class OrderUpdateLaoUrlSerializer(serializers.ModelSerializer):
+    def update(self, instance, validated_data):
+        # Update order fields
+        instance.lao_url = validated_data.get('lao_url', instance.lao_url)
+        instance.save()
+
+        return instance
+
+    class Meta:
+        model = Order
+        fields = ['lao_url']
 
 class PostSerializer(serializers.Serializer):
     name = serializers.CharField(help_text="product name")

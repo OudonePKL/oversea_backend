@@ -39,7 +39,7 @@ from .serializers import (
     GoodsSerializer,
     ReviewSerializer,
     GoodsDetailSerializer,
-    OrderSerializer, OrderCreateSerializer, OrderUpdateSerializer, PendingOrderSerializer, ProcessingOrderSerializer, ShippedOrderSerializer, DeliveredOrderSerializer, 
+    OrderSerializer, OrderCreateSerializer, OrderUpdateSerializer, PendingOrderSerializer, ProcessingOrderSerializer, ShippedOrderSerializer, DeliveredOrderSerializer, OrderUpdateChinaUrlSerializer, OrderUpdateLaoUrlSerializer,
     PostSerializer,
     UpdateStoreSerializer,
     ImageSerializer,
@@ -610,6 +610,30 @@ class ProductReviewListView(generics.ListAPIView):
 
 #         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
 
+
+class ReviewByProductAndUserAPIView(generics.RetrieveAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_object(self):
+        product_id = self.kwargs['product_id']
+        user_id = self.kwargs['user_id']
+        
+        try:
+            review = Review.objects.get(product_id=product_id, user_id=user_id)
+            return review
+        except Review.DoesNotExist:
+            return None
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance is None:
+            content = {'detail': 'Review not found.'}
+            return Response(content, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     
 
 class CheckReview(APIView):
@@ -726,6 +750,32 @@ class OrderUpdateAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class OrderUpdateChinaUrlAPIView(APIView):
+    def put(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = OrderUpdateChinaUrlSerializer(order, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class OrderUpdateLaoUrlAPIView(APIView):
+    def put(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = OrderUpdateLaoUrlSerializer(order, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class OrderDeleteView(generics.DestroyAPIView):
     def delete(self, request, pk, format=None):
@@ -742,69 +792,88 @@ class OrderDeleteView(generics.DestroyAPIView):
 
         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
     
+# class PendingOrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.filter(status='Pending')
+#     serializer_class = PendingOrderSerializer
+
+# class ProcessingOrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.filter(status='Processing')
+#     serializer_class = ProcessingOrderSerializer
+
+# class ShippedOrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.filter(status='Shipped')
+#     serializer_class = ShippedOrderSerializer
+
+# class DeliveredOrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.filter(status='Delivered')
+#     serializer_class = DeliveredOrderSerializer
+
+# class DeliveredOrderListAPIView(generics.ListAPIView):
+#     serializer_class = DeliveredOrderSerializer
+
+#     def get_queryset(self):
+#         return Order.objects.filter(status='Delivered')
+    
 class PendingOrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.filter(status='Pending')
     serializer_class = PendingOrderSerializer
 
+    def get_queryset(self):
+        return Order.objects.filter(status='Pending')
+    
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        count = queryset.count()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({
+            'count': count,
+            'orders': serializer.data
+        })
+
 class ProcessingOrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.filter(status='Processing')
     serializer_class = ProcessingOrderSerializer
 
+    def get_queryset(self):
+        return Order.objects.filter(status='Processing')
+    
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        count = queryset.count()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({
+            'count': count,
+            'orders': serializer.data
+        })
+
 class ShippedOrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.filter(status='Shipped')
     serializer_class = ShippedOrderSerializer
 
-class DeliveredOrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.filter(status='Delivered')
-    serializer_class = DeliveredOrderSerializer
-
+    def get_queryset(self):
+        return Order.objects.filter(status='Shipped')
+    
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        count = queryset.count()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({
+            'count': count,
+            'orders': serializer.data
+        })
+    
 class DeliveredOrderListAPIView(generics.ListAPIView):
     serializer_class = DeliveredOrderSerializer
 
     def get_queryset(self):
         return Order.objects.filter(status='Delivered')
     
-
-# class PendingOrderListAPIView(generics.ListAPIView):
-#     serializer_class = PendingOrderSerializer
-
-#     def get_queryset(self):
-#         store_id = self.request.query_params.get('store_id')
-#         if store_id:
-#             return Order.objects.filter(status='Pending', store_id=store_id)
-#         else:
-#             return Order.objects.none()
-
-# class ProcessingOrderListAPIView(generics.ListAPIView):
-#     serializer_class = ProcessingOrderSerializer
-
-#     def get_queryset(self):
-#         store_id = self.request.query_params.get('store_id')
-#         if store_id:
-#             return Order.objects.filter(status='Processing', store_id=store_id)
-#         else:
-#             return Order.objects.none()
-
-# class ShippedOrderListAPIView(generics.ListAPIView):
-#     serializer_class = ShippedOrderSerializer
-
-#     def get_queryset(self):
-#         store_id = self.request.query_params.get('store_id')
-#         if store_id:
-#             return Order.objects.filter(status='Shipped', store_id=store_id)
-#         else:
-#             return Order.objects.none()
-
-# class DeliveredOrderListAPIView(generics.ListAPIView):
-#     serializer_class = DeliveredOrderSerializer
-
-#     def get_queryset(self):
-#         store_id = self.request.query_params.get('store_id')  # Assuming you pass store_id as a query parameter
-#         if store_id:
-#             return Order.objects.filter(status='Delivered', store_id=store_id)
-#         else:
-#             return Order.objects.none()  # Return an empty queryset if store_id is not provided 
-
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        count = queryset.count()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({
+            'count': count,
+            'orders': serializer.data
+        })
+    
 
 class SearchView(APIView):
     @swagger_auto_schema(
