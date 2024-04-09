@@ -18,6 +18,7 @@ urlpatterns = [
     # path("<int:store_id>", views.CreateProductAPIView.as_view(), name="store"),  # Store Related Related
     path("<int:store_id>", views.StoreView.as_view(), name="store"),  # Store Related Related
     path('product/create', views.CreateProductAPIView.as_view(), name='create-product'),
+    path('product/create2', views.CreateProductView.as_view(), name='create-product'),
     path('product/update/<int:pk>', views.UpdateProductAPIView.as_view(), name='update-product'),
     path('product/delete/<int:pk>', views.DeleteProductAPIView.as_view(), name='delete-product'),
     path(

@@ -12,6 +12,8 @@ from .models import (
     ProductImage,
     BankAccount,
     Review,
+    SizeModel,
+    ColorModel
 )
 
 
@@ -114,3 +116,5 @@ admin.site.register(OrderItem)
 admin.site.register(ProductImage)
 admin.site.register(BankAccount)
 admin.site.register(Review)
+admin.site.register(SizeModel)
+admin.site.register(ColorModel)

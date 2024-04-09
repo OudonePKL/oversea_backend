@@ -13,6 +13,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import CreateAPIView
 from django.http import JsonResponse
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter
@@ -391,13 +392,6 @@ class CreateProductAPIView(APIView):
         responses={200: "Success"},
     )
 
-    # def post(self, request, store_id, format=None):
-    #     request.data['store'] = store_id  # Assign store_id to the request data
-    #     serializer = CreateProductSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         product = serializer.save()
-    #         return Response({"message": "success"},status=status.HTTP_201_CREATED)
-    #     return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
     def post(self, request, store_id, format=None):
         products_data = request.data.get('goods_set')  # Get the list of products from request data
         created_products = []
@@ -414,18 +408,59 @@ class CreateProductAPIView(APIView):
 
         return Response({"message": "success", "products": [str(product) for product in created_products]}, status=status.HTTP_201_CREATED)
     
-class UpdateProductAPIView(APIView):
-    def put(self, request, pk, format=None):
-        try:
-            product = GoodsModel.objects.get(pk=pk)
-        except GoodsModel.DoesNotExist:
-            return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+class CreateProductView(CreateAPIView):
+    queryset = GoodsModel.objects.all()
+    serializer_class = CreateProductSerializer
 
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        if isinstance(data, list):
+            serializer = self.get_serializer(data=data, many=True)
+        else:
+            serializer = self.get_serializer(data=data)
+
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class UpdateProductAPIView(APIView):
+#     def put(self, request, pk, format=None):
+#         try:
+#             product = GoodsModel.objects.get(pk=pk)
+#         except GoodsModel.DoesNotExist:
+#             return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+#         serializer = UpdateProductSerializer(product, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"message": "success"}, status=status.HTTP_200_OK)
+#         return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+    
+class UpdateProductAPIView(APIView):
+    def get_object(self, pk):
+        try:
+            return GoodsModel.objects.get(pk=pk)
+        except GoodsModel.DoesNotExist:
+            raise status.HTTP_404_NOT_FOUND
+
+    def put(self, request, pk, format=None):
+        product = self.get_object(pk)
         serializer = UpdateProductSerializer(product, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "success"}, status=status.HTTP_200_OK)
-        return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk, format=None):
+        product = self.get_object(pk)
+        serializer = UpdateProductSerializer(product, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "success"}, status=status.HTTP_200_OK)
+        return Response({"message": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class DeleteProductAPIView(APIView):
     def delete(self, request, pk, format=None):
@@ -446,7 +481,7 @@ class DeleteProductAPIView(APIView):
         # Delete the Product instance
         product.delete()
 
-        return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "success"}, status=status.HTTP_200_OK)
 
 
 class GoodsPatchView(APIView):

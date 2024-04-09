@@ -28,6 +28,7 @@ class StoreModel(models.Model):
     )
     sub_address = models.CharField(max_length=200, verbose_name="Store detailed address", null=True, blank=True)
     introduce = models.TextField(null=True, blank=True, verbose_name="introduction")
+    logo = models.FileField(null=True, blank=True, verbose_name="logo image", upload_to="media/")
     background_image = models.FileField(null=True, blank=True, verbose_name="background image", upload_to="media/")
 
     def __str__(self):
@@ -46,6 +47,7 @@ class GoodsModel(models.Model):
         null=True,
         blank=True,
         verbose_name="category",
+        
         default=1,
     )
     name = models.CharField(max_length=100, verbose_name="product name")
@@ -70,7 +72,6 @@ class ColorModel(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class ImageModel(models.Model):
     class Meta:

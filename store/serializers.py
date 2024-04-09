@@ -523,9 +523,9 @@ class GoodsCreateSerializer(serializers.ModelSerializer):
         # }
 
 class CreateProductSerializer(serializers.ModelSerializer):
-    sizes = serializers.ListField(child=serializers.CharField(max_length=50), write_only=True)
-    colors = serializers.ListField(child=serializers.CharField(max_length=50), write_only=True)
-    images = serializers.ListField(child=serializers.ImageField(), write_only=True)
+    sizes = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
+    colors = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
+    images = serializers.ListField(child=serializers.ImageField(), required=False)
 
     class Meta:
         model = GoodsModel
@@ -539,16 +539,65 @@ class CreateProductSerializer(serializers.ModelSerializer):
         product = GoodsModel.objects.create(**validated_data)
 
         for size_name in sizes_data:
-            SizeModel.objects.create(product_id=product.id, name=size_name)
+            size = SizeModel.objects.create(product=product, name=size_name)
 
         for color_name in colors_data:
-            ColorModel.objects.create(product_id=product.id, name=color_name)
+            color = ColorModel.objects.create(product=product, name=color_name)
 
         for image_file in images_data:
-            ProductImage.objects.create(product_id=product.id, image=image_file)
+            image = ProductImage.objects.create(product=product, image=image_file)
 
         return product
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        sizes = instance.size_set.all()
+        colors = instance.color_set.all()
+        images = instance.images.all()
+
+        representation['sizes'] = SizeSerializer(sizes, many=True).data
+        representation['colors'] = ColorSerializer(colors, many=True).data
+        representation['images'] = ProductImageSerializer(images, many=True).data
+
+        return representation
     
+# class UpdateProductSerializer(serializers.ModelSerializer):
+#     sizes = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
+#     colors = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
+#     images = serializers.ListField(child=serializers.ImageField(), required=False)
+
+#     class Meta:
+#         model = GoodsModel
+#         fields = ['name', 'description', 'price', 'category', 'sizes', 'colors', 'images']
+
+#     def update(self, instance, validated_data):
+#         sizes_data = validated_data.pop('sizes', None)
+#         colors_data = validated_data.pop('colors', None)
+#         images_data = validated_data.pop('images', None)
+
+#         for attr, value in validated_data.items():
+#             setattr(instance, attr, value)
+
+#         instance.save()
+
+#         if sizes_data is not None:
+#             instance.size.all().delete()  # Clear existing sizes
+#             for size_name in sizes_data:
+#                 SizeModel.objects.create(product=instance, name=size_name)
+
+#         if colors_data is not None:
+#             instance.color.all().delete()  # Clear existing colors
+#             for color_name in colors_data:
+#                 ColorModel.objects.create(product=instance, name=color_name)
+
+#         if images_data is not None:
+#             instance.images.all().delete()  # Clear existing images
+#             for image_file in images_data:
+#                 ProductImage.objects.create(product=instance, image=image_file)
+
+#         return instance
+
 class UpdateProductSerializer(serializers.ModelSerializer):
     sizes = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
     colors = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
