@@ -43,6 +43,11 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        fields = ["id", "email", "nickname", "profile_image"]
+
 class GetUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel

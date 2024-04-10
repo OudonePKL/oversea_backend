@@ -36,6 +36,7 @@ from .serializers import (
     SellerSerializer,
     PostUserSerializer,
     GetUserSerializer,
+    AdminUserSerializer,
 )
 from django.shortcuts import render
 import smtplib
@@ -210,6 +211,73 @@ class SignupView(APIView):
                     {"message": f"{serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
+class CreateSuperuserView(APIView):
+    serializer_class = UserSerializer
+
+    def post(self, request, format=None):
+        email = request.data.get("email")
+        # Check for email duplicates
+        user = UserModel.objects.filter(email=email)
+        if user.exists():
+            return Response(
+                {"message": "The email already exists."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = self.serializer_class(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save(is_admin=True, is_seller=False)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ListAdminUsersView(APIView):
+    serializer_class = AdminUserSerializer
+
+    def get(self, request, format=None):
+        admin_users = UserModel.objects.filter(is_admin=True).order_by('-id')
+        serializer = self.serializer_class(admin_users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetAdminUserByIdView(APIView):
+    serializer_class = AdminUserSerializer
+
+    def get(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_admin=True)
+            serializer = self.serializer_class(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Admin user not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class DeleteAdminUserView(APIView):
+    serializer_class = AdminUserSerializer
+
+    def delete(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_admin=True)
+            user.delete()
+            return Response({"message": "Admin user deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Admin user not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class UpdateAdminUserView(APIView):
+    serializer_class = AdminUserSerializer
+
+    def put(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_admin=True)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Admin user not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(user, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 # log in
 class LoginView(TokenObtainPairView):
