@@ -48,6 +48,17 @@ class AdminUserSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = ["id", "email", "nickname", "profile_image"]
 
+class ClientUserSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model = UserModel
+        fields = ["id", "email", "nickname", "profile_image"]
+
+class SellerUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        fields = ["id", "email", "nickname", "profile_image"]
+
+
 class GetUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel

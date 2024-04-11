@@ -37,6 +37,8 @@ from .serializers import (
     PostUserSerializer,
     GetUserSerializer,
     AdminUserSerializer,
+    ClientUserSerializer,
+    SellerUserSerializer,
 )
 from django.shortcuts import render
 import smtplib
@@ -211,6 +213,7 @@ class SignupView(APIView):
                     {"message": f"{serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
+# ===== Manage Admin user =====
 class CreateSuperuserView(APIView):
     serializer_class = UserSerializer
 
@@ -277,7 +280,67 @@ class UpdateAdminUserView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+# ===== Manage Admin user =====
+class ListClientUsersView(APIView):
+    serializer_class = ClientUserSerializer
+
+    def get(self, request, format=None):
+        user = UserModel.objects.filter(is_active=True, is_admin=False, is_seller=False).order_by('-id')
+        serializer = self.serializer_class(user, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetClientUserByIdView(APIView):
+    serializer_class = ClientUserSerializer
+
+    def get(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_active=True)
+            serializer = self.serializer_class(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Client user not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class DeleteClientUserView(APIView):
+    serializer_class = ClientUserSerializer
+
+    def delete(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_active=True)
+            user.delete()
+            return Response({"message": "Client user deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Client user not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ListSellerUsersView(APIView):
+    serializer_class = SellerUserSerializer
+
+    def get(self, request, format=None):
+        user = UserModel.objects.filter(is_active=True, is_admin=False, is_seller=True).order_by('-id')
+        serializer = self.serializer_class(user, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetSellerUserByIdView(APIView):
+    serializer_class = SellerUserSerializer
+
+    def get(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_seller=True)
+            serializer = self.serializer_class(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Seller user not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+class DeleteSellerUserView(APIView):
+    serializer_class = SellerUserSerializer
+
+    def delete(self, request, user_id, format=None):
+        try:
+            user = UserModel.objects.get(id=user_id, is_seller=True)
+            user.delete()
+            return Response({"message": "Seller user deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except UserModel.DoesNotExist:
+            return Response({"message": "Seller not found"}, status=status.HTTP_404_NOT_FOUND)
 
 # log in
 class LoginView(TokenObtainPairView):

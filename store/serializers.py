@@ -119,8 +119,7 @@ class OnlyStoreInfoSerializer(serializers.ModelSerializer):
 
 class StoreSerializer(serializers.ModelSerializer):
     goods_set = serializers.SerializerMethodField()
-
-    # seller = serializers.SerializerMethodField()
+    seller = UserSerializer()
 
     def get_seller(self, obj):
         return obj.seller.email
