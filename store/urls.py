@@ -70,5 +70,7 @@ urlpatterns = [
     path('bank-accounts/<int:store_id>/has_bank_account', views.check_store_bank_account, name='check_store_bank_account'),
     path('', include(router.urls)),
     path('bank-accounts/update/<int:store_id>', views.BankAccountUpdateAPIView.as_view(), name='bank-account-update'),
+    # Web info
+    path("web-info", views.WebInfoListCreateAPIView.as_view(), name="web-infomation"),
 ]
 # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

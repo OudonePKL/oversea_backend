@@ -16,9 +16,13 @@ class UserSerializer(serializers.ModelSerializer):
             nickname = attrs.get("nickname")
             if nickname:
                 if len(nickname) > 10:
-                    raise ValidationError("Please write your nickname in 10 characters or less.")
+                    raise ValidationError(
+                        "Please write your nickname in 10 characters or less."
+                    )
             if len(attrs.get("password")) < 8:
-                raise ValidationError("Please write your password with at least 8 characters.")
+                raise ValidationError(
+                    "Please write your password with at least 8 characters."
+                )
         return attrs
 
     def create(self, validated_data):
@@ -48,10 +52,12 @@ class AdminUserSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = ["id", "email", "nickname", "profile_image"]
 
-class ClientUserSerializer(serializers.ModelSerializer): 
+
+class ClientUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = ["id", "email", "nickname", "profile_image"]
+
 
 class SellerUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,13 +89,19 @@ class SellerSerializer(serializers.ModelSerializer):
         introduce = attrs.get("introduce")
         if name:
             if len(name) > 15:
-                raise ValidationError("Please write your store name in 15 characters or less.")
+                raise ValidationError(
+                    "Please write your store name in 15 characters or less."
+                )
         if phone:
             if not phone.isdigit():
-                raise ValidationError("Please enter only numbers for your phone number!")
+                raise ValidationError(
+                    "Please enter only numbers for your phone number!"
+                )
         if introduce:
             if len(introduce) > 300:
-                raise ValidationError("Please write your introduction in 300 characters or less.")
+                raise ValidationError(
+                    "Please write your introduction in 300 characters or less."
+                )
         return attrs
 
     class Meta:

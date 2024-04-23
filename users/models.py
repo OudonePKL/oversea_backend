@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+
 class CheckEmailQuerySet(models.QuerySet):
     """
     Class required to delete authentication number
@@ -14,6 +15,7 @@ class CheckEmailQuerySet(models.QuerySet):
 
     def delete_expired(self):
         self.expired().delete()
+
 
 class CheckEmail(models.Model):
     class Meta:
@@ -33,6 +35,7 @@ class CheckEmail(models.Model):
         self.expires_at = timezone.now() + timedelta(minutes=3)
         super().save(**kwargs)
 
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, nickname=None):
         if not email:
@@ -50,6 +53,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+
 class UserModel(AbstractBaseUser):
     class Meta:
         verbose_name_plural = "1. User information"
@@ -58,7 +62,9 @@ class UserModel(AbstractBaseUser):
     nickname = models.CharField(
         verbose_name="nickname", max_length=30, null=True, blank=True
     )
-    profile_image = models.FileField(verbose_name="profile image", null=True, blank=True, upload_to="media/")
+    profile_image = models.FileField(
+        verbose_name="profile image", null=True, blank=True, upload_to="media/"
+    )
     password = models.CharField(verbose_name="password", max_length=128)
 
     is_seller = models.BooleanField(default=False, verbose_name="Seller")
@@ -85,3 +91,5 @@ class UserModel(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
+
+

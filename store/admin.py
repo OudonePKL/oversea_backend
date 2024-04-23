@@ -7,19 +7,21 @@ from .models import (
     CategoryModel,
     ImageModel,
     GoodsModel,
-    FilteringModel, PolicyModel,
-    Order, OrderItem,
+    FilteringModel,
+    PolicyModel,
+    Order,
+    OrderItem,
     ProductImage,
     BankAccount,
     Review,
     SizeModel,
-    ColorModel
+    ColorModel,
+    WebInfo,
 )
 
 
 @admin.register(StoreModel)
 class StoreAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
     list_display = (
@@ -36,7 +38,6 @@ class StoreAdmin(admin.ModelAdmin):
 
 @admin.register(CategoryModel)
 class CategoryAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
     list_display = ("name",)
@@ -46,7 +47,6 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(GoodsModel)
 class GoodsAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
     list_display = (
@@ -63,7 +63,6 @@ class GoodsAdmin(admin.ModelAdmin):
 
 @admin.register(OrderModel)
 class OrderAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
     list_display = ("goods", "price", "user", "ordered_at")
@@ -82,7 +81,6 @@ class ReviewModelAdmin(admin.ModelAdmin):
 
 @admin.register(ImageModel)
 class ImageModelAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
     list_display = ("goods", "image")
@@ -92,7 +90,6 @@ class ImageModelAdmin(admin.ModelAdmin):
 
 @admin.register(FilteringModel)
 class FilteringModelAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
     list_display = ("id", "filter", "option")
@@ -103,13 +100,13 @@ class FilteringModelAdmin(admin.ModelAdmin):
 
 @admin.register(PolicyModel)
 class FilteringModelAdmin(admin.ModelAdmin):
-
     """Board Admin Definition"""
 
-    list_display = ("id","category")
+    list_display = ("id", "category")
     list_display_links = ("category",)
 
     search_fields = ("category",)
+
 
 admin.site.register(Order)
 admin.site.register(OrderItem)
@@ -118,3 +115,4 @@ admin.site.register(BankAccount)
 admin.site.register(Review)
 admin.site.register(SizeModel)
 admin.site.register(ColorModel)
+admin.site.register(WebInfo)

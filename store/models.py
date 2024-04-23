@@ -8,7 +8,7 @@ class CategoryModel(models.Model):
         verbose_name_plural = "1. Category types"
 
     name = models.CharField(max_length=100, default="etc", verbose_name="Category name")
-    image = models.ImageField(upload_to='media/', null=True, blank=True)
+    image = models.ImageField(upload_to="media/", null=True, blank=True)
 
     def __str__(self):
         return str(self.name)
@@ -19,17 +19,34 @@ class StoreModel(models.Model):
         db_table = "store"
         verbose_name_plural = "2. Store list"
 
-    seller = models.ForeignKey(UserModel, on_delete=models.CASCADE, verbose_name="seller")
-    name = models.CharField(max_length=100, verbose_name="Store name", )
-    address = models.CharField(max_length=200, verbose_name="store location", )
+    seller = models.ForeignKey(
+        UserModel, on_delete=models.CASCADE, verbose_name="seller"
+    )
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Store name",
+    )
+    address = models.CharField(
+        max_length=200,
+        verbose_name="store location",
+    )
     phone = models.CharField(max_length=200, null=True, blank=True)
     company_number = models.CharField(
-        max_length=200, null=True, blank=True, verbose_name="Company Registration Number"
+        max_length=200,
+        null=True,
+        blank=True,
+        verbose_name="Company Registration Number",
     )
-    sub_address = models.CharField(max_length=200, verbose_name="Store detailed address", null=True, blank=True)
+    sub_address = models.CharField(
+        max_length=200, verbose_name="Store detailed address", null=True, blank=True
+    )
     introduce = models.TextField(null=True, blank=True, verbose_name="introduction")
-    logo = models.FileField(null=True, blank=True, verbose_name="logo image", upload_to="media/")
-    background_image = models.FileField(null=True, blank=True, verbose_name="background image", upload_to="media/")
+    logo = models.FileField(
+        null=True, blank=True, verbose_name="logo image", upload_to="media/"
+    )
+    background_image = models.FileField(
+        null=True, blank=True, verbose_name="background image", upload_to="media/"
+    )
 
     def __str__(self):
         return str(self.name)
@@ -40,14 +57,15 @@ class GoodsModel(models.Model):
         db_table = "goods"
         verbose_name_plural = "3. Product list"
 
-    store = models.ForeignKey(StoreModel, on_delete=models.CASCADE, verbose_name="store")
+    store = models.ForeignKey(
+        StoreModel, on_delete=models.CASCADE, verbose_name="store"
+    )
     category = models.ForeignKey(
         CategoryModel,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="category",
-        
         default=1,
     )
     name = models.CharField(max_length=100, verbose_name="product name")
@@ -58,38 +76,53 @@ class GoodsModel(models.Model):
 
     def __str__(self):
         return str(self.name)
-    
+
+
 class SizeModel(models.Model):
-    product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, related_name='size')
+    product = models.ForeignKey(
+        GoodsModel, on_delete=models.CASCADE, related_name="size"
+    )
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+
 
 class ColorModel(models.Model):
-    product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, related_name='color')
+    product = models.ForeignKey(
+        GoodsModel, on_delete=models.CASCADE, related_name="color"
+    )
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+
 
 class ImageModel(models.Model):
     class Meta:
         db_table = "image"
         verbose_name_plural = "4. Product image list"
 
-    goods = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, verbose_name="Goods")
-    image = models.FileField(null=True, blank=True, verbose_name="image", upload_to="media/")
+    goods = models.ForeignKey(
+        GoodsModel, on_delete=models.CASCADE, verbose_name="Goods"
+    )
+    image = models.FileField(
+        null=True, blank=True, verbose_name="image", upload_to="media/"
+    )
 
     def __str__(self):
         return str(self.goods.name)
-    
+
+
 class ProductImage(models.Model):
-    product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='media/')
+    product = models.ForeignKey(
+        GoodsModel, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField(upload_to="media/")
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
 
 # Old one
 class OrderModel(models.Model):
@@ -106,18 +139,26 @@ class OrderModel(models.Model):
 
     def __str__(self):
         return str(self.goods.name)
-    
+
+
 # New one
 class Order(models.Model):
     STATUS_CHOICES = (
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
-        ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered'),
-        ('Cancelled', 'Cancelled'),
+        ("Pending", "Pending"),
+        ("Processing", "Processing"),
+        ("Shipped", "Shipped"),
+        ("Delivered", "Delivered"),
+        ("Cancelled", "Cancelled"),
     )
 
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    store = models.ForeignKey(
+        StoreModel,
+        on_delete=models.SET_NULL,
+        verbose_name="store",
+        null=True,
+        blank=True,
+    )
     tel = models.CharField(max_length=20)
     total_prices = models.DecimalField(max_digits=10, decimal_places=2)
     account_name = models.CharField(max_length=100, null=True, blank=True)
@@ -133,9 +174,12 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.pk} - User: {self.user.email}, Status: {self.status}"
 
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    product = models.ForeignKey(GoodsModel, on_delete=models.DO_NOTHING, related_name='orderitem')
+    product = models.ForeignKey(
+        GoodsModel, on_delete=models.DO_NOTHING, related_name="orderitem"
+    )
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     color = models.CharField(max_length=50)
@@ -143,6 +187,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"OrderItem {self.pk} - Product: {self.product.name}, Quantity: {self.quantity}"
+
 
 # old review
 class ReviewModel(models.Model):
@@ -162,9 +207,12 @@ class ReviewModel(models.Model):
     def __str__(self):
         return str(self.goods.name)
 
+
 # # new review
 class Review(models.Model):
-    product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, related_name='review')
+    product = models.ForeignKey(
+        GoodsModel, on_delete=models.CASCADE, related_name="review"
+    )
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     rating = models.IntegerField()
     comment = models.TextField(blank=True)
@@ -173,6 +221,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for {self.product.name} by {self.user.email}"
+
 
 class BookmarkModel(models.Model):
     class Meta:
@@ -189,15 +238,19 @@ class FilteringModel(models.Model):
         verbose_name_plural = "7. Filter product list"
 
     filter = models.CharField(max_length=100, verbose_name="filter")
-    option = models.TextField(null=True, blank=True, default="", verbose_name="Additional explanation")
+    option = models.TextField(
+        null=True, blank=True, default="", verbose_name="Additional explanation"
+    )
 
 
 class PolicyModel(models.Model):
     class Meta:
         verbose_name_plural = "8. Terms and privacy policy"
 
-    category = models.IntegerField(null=True, blank=True, default=1, verbose_name='type')
-    content = models.TextField(null=True, blank=True, default='', verbose_name='detail')
+    category = models.IntegerField(
+        null=True, blank=True, default=1, verbose_name="type"
+    )
+    content = models.TextField(null=True, blank=True, default="", verbose_name="detail")
 
 
 # Bank account
@@ -206,7 +259,33 @@ class BankAccount(models.Model):
     name = models.CharField(max_length=50)
     account_name = models.CharField(max_length=50)
     account_number = models.CharField(max_length=50)
-    image = models.FileField(null=True, blank=True, verbose_name="image", upload_to="media/")
+    image = models.FileField(
+        null=True, blank=True, verbose_name="image", upload_to="media/"
+    )
 
     def __str__(self):
         return f"BankAccount {self.pk} - Store: {self.store.name}"
+
+
+class WebInfo(models.Model):
+    class Meta:
+        db_table = "WebInfo"
+        verbose_name_plural = "Website Informations"
+        
+    name = models.CharField(max_length=100)
+    tel1 = models.CharField(max_length=20)
+    tel2 = models.CharField(max_length=20)
+    email = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    description = models.TextField()
+    logo = models.FileField(
+        null=True, blank=True, verbose_name="logo image", upload_to="media/"
+    )
+    background = models.FileField(
+        null=True, blank=True, verbose_name="background image", upload_to="media/"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

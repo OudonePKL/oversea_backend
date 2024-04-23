@@ -4,11 +4,21 @@ from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from store.models import (
-    StoreModel, GoodsModel, ReviewModel, OrderModel, 
-    ImageModel, SizeModel, ColorModel, CategoryModel, 
-    ProductImage, Order, OrderItem, 
-    BankAccount, Review
-    )
+    StoreModel,
+    GoodsModel,
+    ReviewModel,
+    OrderModel,
+    ImageModel,
+    SizeModel,
+    ColorModel,
+    CategoryModel,
+    ProductImage,
+    Order,
+    OrderItem,
+    BankAccount,
+    Review,
+    WebInfo,
+)
 from users.models import UserModel
 
 from users.serializers import UserSerializer
@@ -17,10 +27,11 @@ from users.serializers import UserSerializer
 def format_with_commas(n):
     return "{:,}".format(int(n))
 
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryModel
-        fields = ('id', 'name', 'image')
+        fields = ("id", "name", "image")
 
 
 class GoodsSerializer(serializers.ModelSerializer):
@@ -61,15 +72,15 @@ class GoodsSerializer(serializers.ModelSerializer):
         return review_total
 
     def get_store_address(self, obj):
-        address = obj.store.address.split(' ')[:2]
-        address = ' '.join(address)
+        address = obj.store.address.split(" ")[:2]
+        address = " ".join(address)
         return address
-    
+
     def get_sizes(self, obj):
         sizes = SizeModel.objects.filter(product=obj)
         serializer = SizeSerializer(sizes, many=True)
         return serializer.data
-    
+
     def get_colors(self, obj):
         colors = ColorModel.objects.filter(product=obj)
         serializer = ColorSerializer(colors, many=True)
@@ -80,7 +91,7 @@ class GoodsSerializer(serializers.ModelSerializer):
         serializer = ImageSerializer(image)
         image = serializer.data.get("image")
         return image
-    
+
     def get_images(self, obj):
         images = ProductImage.objects.filter(product=obj).first()
         serializer = ProductImageSerializer(images)
@@ -100,7 +111,9 @@ class UpdateStoreSerializer(serializers.ModelSerializer):
         name = attrs.get("name")
         if name:
             if len(name) > 15:
-                raise ValidationError("Please write your store name in 15 characters or less.")
+                raise ValidationError(
+                    "Please write your store name in 15 characters or less."
+                )
         return attrs
 
     class Meta:
@@ -169,23 +182,26 @@ class StoreSerializer(serializers.ModelSerializer):
 #             "product": {"required": False},
 #         }
 
+
 # new review
 class ReviewSerializer(serializers.ModelSerializer):
     # user = UserSerializer()
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = "__all__"
+
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = '__all__'   
+        fields = "__all__"
+
 
 class GoodsDetailSerializer(serializers.ModelSerializer):
     """
-     Replace store with name
-     Create a review set for the product
-     """
+    Replace store with name
+    Create a review set for the product
+    """
 
     store_name = serializers.SerializerMethodField()
     store_user_id = serializers.SerializerMethodField()
@@ -216,12 +232,12 @@ class GoodsDetailSerializer(serializers.ModelSerializer):
 
     def get_category(self, obj):
         return obj.category.name
-    
+
     def get_sizes(self, obj):
         sizes = SizeModel.objects.filter(product=obj)
         serializer = SizeSerializer(sizes, many=True)
         return serializer.data
-    
+
     def get_colors(self, obj):
         colors = ColorModel.objects.filter(product=obj)
         serializer = ColorSerializer(colors, many=True)
@@ -230,9 +246,9 @@ class GoodsDetailSerializer(serializers.ModelSerializer):
     def get_image_set(self, obj):
         images = ProductImage.objects.filter(product_id=obj.id)
         serializer = ProductImageSerializer(images, many=True)
-        image_set = [i['image'] for i in serializer.data]
+        image_set = [i["image"] for i in serializer.data]
         return image_set
-    
+
     def get_images(self, obj):
         images = ProductImage.objects.filter(product=obj).first()
         serializer = ProductImageSerializer(images)
@@ -250,12 +266,16 @@ class GoodsDetailSerializer(serializers.ModelSerializer):
 
     # def get_price(self, obj):
     #     return str(format_with_commas(obj.price))
-    
+
     def get_price(self, obj):
         return obj.price
 
     def get_store_image(self, obj):
-        return obj.store.seller.profile_image.url if obj.store.seller.profile_image else False
+        return (
+            obj.store.seller.profile_image.url
+            if obj.store.seller.profile_image
+            else False
+        )
 
     def get_star_avg(self, obj):
         review = Review.objects.filter(product_id=obj.id).values("rating")
@@ -272,15 +292,18 @@ class GoodsDetailSerializer(serializers.ModelSerializer):
         model = GoodsModel
         exclude = ["created_at", "updated_at"]
 
+
 class SizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SizeModel
-        fields = '__all__'
+        fields = "__all__"
+
 
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = ColorModel
-        fields = '__all__'
+        fields = "__all__"
+
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -290,18 +313,21 @@ class ImageSerializer(serializers.ModelSerializer):
             "goods": {"required": False},
         }
 
+
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = '__all__'
-        
+        fields = "__all__"
+
 
 # Order
 class OrderItemSerializer(serializers.ModelSerializer):
     product = GoodsSerializer()
+
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price', 'color', 'size']
+        fields = ["id", "product", "quantity", "price", "color", "size"]
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
@@ -313,19 +339,36 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items', 'china_url', 'lao_url']
+        fields = [
+            "id",
+            "user",
+            "store",
+            "tel",
+            "total_prices",
+            "account_name",
+            "province",
+            "district",
+            "shipping_company",
+            "branch",
+            "created_at",
+            "status",
+            "items",
+            "china_url",
+            "lao_url",
+        ]
 
 
 class OrderItemCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'price', 'color', 'size']
+        fields = ["id", "product", "quantity", "price", "color", "size"]
+
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemCreateSerializer(many=True, write_only=True)
 
     def create(self, validated_data):
-        order_items_data = validated_data.pop('items')
+        order_items_data = validated_data.pop("items")
         order = Order.objects.create(**validated_data)
         for order_item_data in order_items_data:
             OrderItem.objects.create(order=order, **order_item_data)
@@ -333,18 +376,45 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company', 'branch', 'created_at', 'status', 'items']
+        fields = [
+            "id",
+            "user",
+            "store",
+            "tel",
+            "total_prices",
+            "account_name",
+            "province",
+            "district",
+            "shipping_company",
+            "branch",
+            "created_at",
+            "status",
+            "items",
+        ]
 
 
 class PendingOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
-                  'branch', 'created_at', 'status', 'items']
+        fields = [
+            "id",
+            "user",
+            "store",
+            "tel",
+            "total_prices",
+            "account_name",
+            "province",
+            "district",
+            "shipping_company",
+            "branch",
+            "created_at",
+            "status",
+            "items",
+        ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if instance.status != 'Pending':
+        if instance.status != "Pending":
             return None  # Skip orders that are not pending
         return data
 
@@ -352,24 +422,51 @@ class PendingOrderSerializer(OrderSerializer):
 class ProcessingOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
-                  'branch', 'created_at', 'status', 'items']
+        fields = [
+            "id",
+            "user",
+            "store",
+            "tel",
+            "total_prices",
+            "account_name",
+            "province",
+            "district",
+            "shipping_company",
+            "branch",
+            "created_at",
+            "status",
+            "items",
+        ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if instance.status != 'Processing':
+        if instance.status != "Processing":
             return None  # Skip orders that are not processing
         return data
+
 
 class DeliveredOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
-                  'branch', 'created_at', 'status', 'items']
+        fields = [
+            "id",
+            "user",
+            "store",
+            "tel",
+            "total_prices",
+            "account_name",
+            "province",
+            "district",
+            "shipping_company",
+            "branch",
+            "created_at",
+            "status",
+            "items",
+        ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if instance.status != 'Delivered':
+        if instance.status != "Delivered":
             return None  # Skip orders that are not Delivered
         return data
 
@@ -377,55 +474,73 @@ class DeliveredOrderSerializer(OrderSerializer):
 class ShippedOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user', 'tel', 'total_prices', 'account_name', 'province', 'district', 'shipping_company',
-                  'branch', 'created_at', 'status', 'items']
+        fields = [
+            "id",
+            "user",
+            "store",
+            "tel",
+            "total_prices",
+            "account_name",
+            "province",
+            "district",
+            "shipping_company",
+            "branch",
+            "created_at",
+            "status",
+            "items",
+        ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if instance.status != 'Shipped':
+        if instance.status != "Shipped":
             return None  # Skip orders that are not Shipped
         return data
+
 
 class OrderItemUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity', 'color', 'size']
+        fields = ["product", "quantity", "color", "size"]
+
 
 class OrderUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update order fields
-        instance.status = validated_data.get('status', instance.status)
+        instance.status = validated_data.get("status", instance.status)
         instance.save()
 
         return instance
 
     class Meta:
         model = Order
-        fields = ['status']
+        fields = ["status"]
+
 
 class OrderUpdateChinaUrlSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update order fields
-        instance.china_url = validated_data.get('china_url', instance.china_url)
+        instance.china_url = validated_data.get("china_url", instance.china_url)
         instance.save()
 
         return instance
 
     class Meta:
         model = Order
-        fields = ['china_url']
+        fields = ["china_url"]
+
 
 class OrderUpdateLaoUrlSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update order fields
-        instance.lao_url = validated_data.get('lao_url', instance.lao_url)
+        instance.lao_url = validated_data.get("lao_url", instance.lao_url)
         instance.save()
 
         return instance
 
     class Meta:
         model = Order
-        fields = ['lao_url']
+        fields = ["lao_url"]
+
 
 class PostSerializer(serializers.Serializer):
     name = serializers.CharField(help_text="product name")
@@ -440,9 +555,10 @@ class PostSerializer(serializers.Serializer):
 
 class OnlyStoreGoodsSerializer(serializers.ModelSerializer):
     """
-     Replace store with name
-     Create a review set for the product
-     """
+    Replace store with name
+    Create a review set for the product
+    """
+
     review_set = serializers.SerializerMethodField()
     # category = serializers.SerializerMethodField()
     order_set = serializers.SerializerMethodField()
@@ -475,9 +591,9 @@ class OnlyStoreGoodsSerializer(serializers.ModelSerializer):
     def get_image_set(self, obj):
         images = ProductImage.objects.filter(product_id=obj.id)
         serializer = ProductImageSerializer(images, many=True)
-        image_set = [i['image'] for i in serializer.data]
+        image_set = [i["image"] for i in serializer.data]
         return image_set
-    
+
     def get_images(self, obj):
         images = ProductImage.objects.filter(product=obj).first()
         serializer = ProductImageSerializer(images)
@@ -497,7 +613,19 @@ class OnlyStoreGoodsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GoodsModel
-        fields = ["star_avg","goods_id", "review_set", "category", "order_set", "name", "price", "format_price", "image_set", "images", "description"]
+        fields = [
+            "star_avg",
+            "goods_id",
+            "review_set",
+            "category",
+            "order_set",
+            "name",
+            "price",
+            "format_price",
+            "image_set",
+            "images",
+            "description",
+        ]
 
 
 class OnlyStoreReviewSerializer(serializers.ModelSerializer):
@@ -545,19 +673,33 @@ class GoodsCreateSerializer(serializers.ModelSerializer):
         #     "description": {"required": False},
         # }
 
+
 class CreateProductSerializer(serializers.ModelSerializer):
-    sizes = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
-    colors = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
+    sizes = serializers.ListField(
+        child=serializers.CharField(max_length=50), required=False
+    )
+    colors = serializers.ListField(
+        child=serializers.CharField(max_length=50), required=False
+    )
     images = serializers.ListField(child=serializers.ImageField(), required=False)
 
     class Meta:
         model = GoodsModel
-        fields = ['name', 'description', 'price', 'category', 'store', 'sizes', 'colors', 'images']
+        fields = [
+            "name",
+            "description",
+            "price",
+            "category",
+            "store",
+            "sizes",
+            "colors",
+            "images",
+        ]
 
     def create(self, validated_data):
-        sizes_data = validated_data.pop('sizes', [])
-        colors_data = validated_data.pop('colors', [])
-        images_data = validated_data.pop('images', [])
+        sizes_data = validated_data.pop("sizes", [])
+        colors_data = validated_data.pop("colors", [])
+        images_data = validated_data.pop("images", [])
 
         product = GoodsModel.objects.create(**validated_data)
 
@@ -574,17 +716,18 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        
+
         sizes = instance.size_set.all()
         colors = instance.color_set.all()
         images = instance.images.all()
 
-        representation['sizes'] = SizeSerializer(sizes, many=True).data
-        representation['colors'] = ColorSerializer(colors, many=True).data
-        representation['images'] = ProductImageSerializer(images, many=True).data
+        representation["sizes"] = SizeSerializer(sizes, many=True).data
+        representation["colors"] = ColorSerializer(colors, many=True).data
+        representation["images"] = ProductImageSerializer(images, many=True).data
 
         return representation
-    
+
+
 # class UpdateProductSerializer(serializers.ModelSerializer):
 #     sizes = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
 #     colors = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
@@ -621,19 +764,32 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
 #         return instance
 
+
 class UpdateProductSerializer(serializers.ModelSerializer):
-    sizes = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
-    colors = serializers.ListField(child=serializers.CharField(max_length=50), required=False)
+    sizes = serializers.ListField(
+        child=serializers.CharField(max_length=50), required=False
+    )
+    colors = serializers.ListField(
+        child=serializers.CharField(max_length=50), required=False
+    )
     images = serializers.ListField(child=serializers.ImageField(), required=False)
 
     class Meta:
         model = GoodsModel
-        fields = ['name', 'description', 'price', 'category', 'sizes', 'colors', 'images']
+        fields = [
+            "name",
+            "description",
+            "price",
+            "category",
+            "sizes",
+            "colors",
+            "images",
+        ]
 
     def update(self, instance, validated_data):
-        sizes_data = validated_data.pop('sizes', None)
-        colors_data = validated_data.pop('colors', None)
-        images_data = validated_data.pop('images', None)
+        sizes_data = validated_data.pop("sizes", None)
+        colors_data = validated_data.pop("colors", None)
+        images_data = validated_data.pop("images", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -656,22 +812,24 @@ class UpdateProductSerializer(serializers.ModelSerializer):
                 ProductImage.objects.create(product=instance, image=image_file)
 
         return instance
-    
+
+
 # bank account
 class BankAccountSerializer(serializers.ModelSerializer):
     # Assuming 'store' is a ForeignKey field in your BankAccount model
-    
+
     # Use PrimaryKeyRelatedField if store is represented by its ID
     store = serializers.PrimaryKeyRelatedField(queryset=StoreModel.objects.all())
 
     class Meta:
         model = BankAccount
-        fields = ['id', 'name', 'account_name', 'account_number', 'image', 'store']
+        fields = ["id", "name", "account_name", "account_number", "image", "store"]
+
 
 class BankAccountSerializer2(serializers.ModelSerializer):
     class Meta:
         model = BankAccount
-        fields = '__all__'
+        fields = "__all__"
 
 
 class BankAccountByStoreSerializer(serializers.Serializer):
@@ -680,7 +838,23 @@ class BankAccountByStoreSerializer(serializers.Serializer):
     def get_has_bank_account(self, obj):
         return obj
 
+
 # class BankAccountDetailByStoreSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = BankAccount
 #         fields = ['id', 'name', 'account_name', 'account_number', 'image']
+
+
+class WebInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebInfo
+        fields = [
+            "name",
+            "tel1",
+            "tel2",
+            "email",
+            "address",
+            "description",
+            "logo",
+            "background",
+        ]
