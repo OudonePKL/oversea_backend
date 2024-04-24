@@ -346,12 +346,10 @@ class GoodsView(APIView):
             "3": "-review_count",
             "4": "price",
             "5": "-order_count",
-            "6": "-created_at",
-            "7": "-created_at",
-            "default": "-price",
+            "1": "-created_at",
         }
         
-        sorting_key = sorting_mapping.get(category_type, sorting_mapping["default"])
+        sorting_key = sorting_mapping.get(category_type, sorting_mapping["1"])
 
         if category_type == "3":
             goods = goods.annotate(review_count=Count("reviewmodel"))
