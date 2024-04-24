@@ -41,12 +41,6 @@ class StoreModel(models.Model):
         max_length=200, verbose_name="Store detailed address", null=True, blank=True
     )
     introduce = models.TextField(null=True, blank=True, verbose_name="introduction")
-    logo = models.FileField(
-        null=True, blank=True, verbose_name="logo image", upload_to="media/"
-    )
-    background_image = models.FileField(
-        null=True, blank=True, verbose_name="background image", upload_to="media/"
-    )
 
     def __str__(self):
         return str(self.name)

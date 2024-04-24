@@ -849,6 +849,7 @@ class WebInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = WebInfo
         fields = [
+            "id",
             "name",
             "tel1",
             "tel2",
