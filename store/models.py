@@ -148,7 +148,7 @@ class Order(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     store = models.ForeignKey(
         StoreModel,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name="store",
         null=True,
         blank=True,
