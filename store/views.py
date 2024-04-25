@@ -53,6 +53,7 @@ from .serializers import (
     DeliveredOrderSerializer,
     OrderUpdateChinaUrlSerializer,
     OrderUpdateLaoUrlSerializer,
+    OrderUpdateBillSerializer,
     PostSerializer,
     UpdateStoreSerializer,
     ImageSerializer,
@@ -377,7 +378,6 @@ class GoodsView(APIView):
 class StoreViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = StoreModel.objects.all()
     serializer_class = StoreSerializer
-
 
 class StoreView(APIView):
     # permission_classes = [IsSeller]
@@ -962,6 +962,21 @@ class OrderUpdateLaoUrlAPIView(APIView):
             )
 
         serializer = OrderUpdateLaoUrlSerializer(order, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class OrderUpdateBillAPIView(APIView):
+    def put(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            return Response(
+                {"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = OrderUpdateBillSerializer(order, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

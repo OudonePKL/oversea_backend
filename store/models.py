@@ -164,6 +164,7 @@ class Order(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Pending")
     china_url = models.CharField(max_length=255, null=True, blank=True)
     lao_url = models.CharField(max_length=255, null=True, blank=True)
+    order_bill = models.ImageField(upload_to="media/", null=True, blank=True)
 
     def __str__(self):
         return f"Order {self.pk} - User: {self.user.email}, Status: {self.status}"

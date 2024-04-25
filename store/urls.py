@@ -37,6 +37,7 @@ urlpatterns = [
     path('order/update/<int:pk>', views.OrderUpdateAPIView.as_view(), name='order-update'),
     path('order/update/china-url/<int:pk>', views.OrderUpdateChinaUrlAPIView.as_view(), name='order-update-china-url'),
     path('order/update/lao-url/<int:pk>', views.OrderUpdateLaoUrlAPIView.as_view(), name='order-update-lao-url'),
+    path('order/update/order-bill/<int:pk>', views.OrderUpdateBillAPIView.as_view(), name='order-update-bill'),
     path('order/<int:pk>', views.OrderDetailView.as_view(), name='order-detail'),
     path('user/<int:user_id>/order', views.UserOrderListView.as_view(), name='user-order-list'),
     path('order/delete/<int:pk>', views.OrderDeleteView.as_view(), name='delete-order'),

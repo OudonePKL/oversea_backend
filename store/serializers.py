@@ -331,6 +331,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
+    user = UserSerializer()
 
     def get_items(self, obj):
         order_items = OrderItem.objects.filter(order=obj)
@@ -355,6 +356,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "items",
             "china_url",
             "lao_url",
+            "order_bill"
         ]
 
 
@@ -540,6 +542,18 @@ class OrderUpdateLaoUrlSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["lao_url"]
+        
+class OrderUpdateBillSerializer(serializers.ModelSerializer):
+    def update(self, instance, validated_data):
+        # Update order fields
+        instance.order_bill = validated_data.get("order_bill", instance.order_bill)
+        instance.save()
+
+        return instance
+
+    class Meta:
+        model = Order
+        fields = ["order_bill"]
 
 
 class PostSerializer(serializers.Serializer):
