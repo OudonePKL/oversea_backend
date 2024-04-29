@@ -24,7 +24,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/user/intro', permanent=False)),
+    # path('', RedirectView.as_view(url='/user/intro', permanent=False)),
     path("admin/", admin.site.urls),
     path("user/", include("users.urls")),
     path("store/", include("store.urls")),

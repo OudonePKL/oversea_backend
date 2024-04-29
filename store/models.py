@@ -284,3 +284,21 @@ class WebInfo(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class NoticeModel(models.Model):
+    title = models.CharField(max_length=100)
+    detail = models.TextField()
+    date = models.CharField(max_length=100)
+    user = models.ForeignKey(UserModel, on_delete=models.DO_NOTHING, verbose_name="admin")
+    brochure = models.FileField(
+        null=True, blank=True, verbose_name="Brochure", upload_to="media/notice/"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ("-id",)
+    
+    def __str__(self):
+        return self.title

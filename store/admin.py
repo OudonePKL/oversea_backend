@@ -17,6 +17,7 @@ from .models import (
     SizeModel,
     ColorModel,
     WebInfo,
+    NoticeModel
 )
 
 
@@ -107,7 +108,6 @@ class FilteringModelAdmin(admin.ModelAdmin):
 
     search_fields = ("category",)
 
-
 admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(ProductImage)
@@ -116,3 +116,4 @@ admin.site.register(Review)
 admin.site.register(SizeModel)
 admin.site.register(ColorModel)
 admin.site.register(WebInfo)
+admin.site.register(NoticeModel)

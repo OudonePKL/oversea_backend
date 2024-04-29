@@ -8,6 +8,7 @@ import django
 from django.core.files.base import ContentFile
 from django.db.models import Q, Count
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from rest_framework import status, permissions, generics, viewsets, response
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
@@ -38,6 +39,7 @@ from .models import (
     BankAccount,
     Review,
     WebInfo,
+    NoticeModel,
 )
 from .serializers import (
     StoreSerializer,
@@ -65,6 +67,8 @@ from .serializers import (
     BankAccountSerializer2,
     ReviewCreateSerializer,
     WebInfoSerializer,
+    NoticeListSerializers,
+    NoticeSerializers,
 )
 
 from .permissions import IsOwnerOrReadOnly
@@ -106,25 +110,82 @@ def store_setting(request):
     return render(request, "store/admin.html")
 
 
-# class CategoryListCreate(generics.ListCreateAPIView):
-#     # queryset = Category.objects.all()
-#     serializer_class = CategorySerializer
+# Notice management
+# class NoticeList(generics.ListAPIView):
+#     queryset = NoticeModel.objects.all()
+#     serializer_class = NoticeListSerializers
 
-#     def get_queryset(self):
-#         # Get the original queryset
-#         queryset = CategoryModel.objects.all()
-#         # # Exclude specific data, for example, 'Food'
-#         # queryset = queryset.exclude(name='Food')
-#         return queryset
+# class NoticeDetailDelete(generics.RetrieveDestroyAPIView):
+#     queryset = NoticeModel.objects.all()
+#     serializer_class = NoticeListSerializers
 
-#     def post(self, request, *args, **kwargs):
-#         serializer = CategorySerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({"message": "success"}, status=status.HTTP_201_CREATED)
-#         return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
+# class NoticeCreate(generics.CreateAPIView):
+#     queryset = NoticeModel.objects.all()
+#     serializer_class = NoticeSerializers
+
+# class NoticeUpdate(generics.UpdateAPIView):
+#     queryset = NoticeModel.objects.all()
+#     serializer_class = NoticeSerializers
 
 
+class NoticeList(generics.ListAPIView):
+    queryset = NoticeModel.objects.all()
+    serializer_class = NoticeListSerializers
+
+
+class NoticeDetailDelete(generics.RetrieveDestroyAPIView):
+    queryset = NoticeModel.objects.all()
+    serializer_class = NoticeListSerializers
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        messages.success(request, "Notice deleted successfully.")
+        return Response(
+            {"message": "Notice deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class NoticeCreate(generics.CreateAPIView):
+    queryset = NoticeModel.objects.all()
+    serializer_class = NoticeSerializers
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            messages.success(request, "Notice created successfully.")
+            return Response(
+                {"message": "Notice created successfully.", "data": response.data},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {"message": "Error creating notice.", "errors": response.data},
+                status=response.status_code,
+            )
+
+
+class NoticeUpdate(generics.UpdateAPIView):
+    queryset = NoticeModel.objects.all()
+    serializer_class = NoticeSerializers
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            messages.success(request, "Notice updated successfully.")
+            return Response(
+                {"message": "Notice updated successfully.", "data": response.data},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"message": "Error updating notice.", "errors": response.data},
+                status=response.status_code,
+            )
+
+
+# Category management
 class CategoryListCreate(generics.ListCreateAPIView):
     queryset = CategoryModel.objects.all()
     serializer_class = CategorySerializer
@@ -319,10 +380,10 @@ class GoodsView(APIView):
 
         if goods_id is None:
             goods = self.get_filtered_goods(category_name, category_type, store_id)
-            
+
             if not goods.exists():
                 return Response([], status=200)
-            
+
             serializer = GoodsSerializer(goods, many=True)
             return Response(serializer.data)
         else:
@@ -334,14 +395,14 @@ class GoodsView(APIView):
 
     def get_filtered_goods(self, category_name, category_type, store_id):
         goods = GoodsModel.objects.all()
-        
+
         if store_id:
             goods = goods.filter(store_id=store_id)
 
         if category_name:
             category = get_object_or_404(CategoryModel, name=category_name)
             goods = goods.filter(category=category)
-        
+
         sorting_mapping = {
             "2": "-price",
             "3": "-review_count",
@@ -349,7 +410,7 @@ class GoodsView(APIView):
             "5": "-order_count",
             "1": "-created_at",
         }
-        
+
         sorting_key = sorting_mapping.get(category_type, sorting_mapping["1"])
 
         if category_type == "3":
@@ -374,10 +435,10 @@ class GoodsView(APIView):
         return order_total >= review_total
 
 
-
 class StoreViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = StoreModel.objects.all()
     serializer_class = StoreSerializer
+
 
 class StoreView(APIView):
     # permission_classes = [IsSeller]
@@ -966,7 +1027,8 @@ class OrderUpdateLaoUrlAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class OrderUpdateBillAPIView(APIView):
     def put(self, request, pk):
         try:
@@ -1253,8 +1315,9 @@ class BankAccountUpdateAPIView(generics.UpdateAPIView):
 class WebInfoListCreateAPIView(generics.ListCreateAPIView):
     queryset = WebInfo.objects.all()
     serializer_class = WebInfoSerializer
-    
+
+
 class WebInfoRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = WebInfo.objects.all()
     serializer_class = WebInfoSerializer
-    lookup_field = 'pk'  # Use 'pk' as the lookup field for retrieving and updating the WebInfo object
+    lookup_field = "pk"  # Use 'pk' as the lookup field for retrieving and updating the WebInfo object

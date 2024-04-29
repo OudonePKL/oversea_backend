@@ -74,5 +74,11 @@ urlpatterns = [
     # Web info
     path("web-info", views.WebInfoListCreateAPIView.as_view(), name="web-info-list-create"),
     path("web-info/<int:pk>", views.WebInfoRetrieveUpdateAPIView.as_view(), name="edit-web-information"),
+    # Notice
+    path("notice", views.NoticeList.as_view(), name="list-notice"),
+    path("notice/create", views.NoticeCreate.as_view(), name="list-notice"),
+    path("notice/detail/<int:pk>", views.NoticeDetailDelete.as_view(), name="detail-notice"),
+    path("notice/delete/<int:pk>", views.NoticeDetailDelete.as_view(), name="delete-notice"),
+    path("notice/update/<int:pk>", views.NoticeUpdate.as_view(), name="update-notice"),
 ]
 # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

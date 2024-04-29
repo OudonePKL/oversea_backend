@@ -18,6 +18,7 @@ from store.models import (
     BankAccount,
     Review,
     WebInfo,
+    NoticeModel,
 )
 from users.models import UserModel
 
@@ -356,7 +357,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "items",
             "china_url",
             "lao_url",
-            "order_bill"
+            "order_bill",
         ]
 
 
@@ -542,7 +543,8 @@ class OrderUpdateLaoUrlSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["lao_url"]
-        
+
+
 class OrderUpdateBillSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update order fields
@@ -873,3 +875,15 @@ class WebInfoSerializer(serializers.ModelSerializer):
             "logo",
             "background",
         ]
+
+class NoticeListSerializers(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = NoticeModel
+        fields = ["id", "title", "detail", "date", "user", "brochure", "created_at", "updated_at"]
+
+
+class NoticeSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = NoticeModel
+        fields = ["id", "title", "detail", "date", "user", "brochure"]
