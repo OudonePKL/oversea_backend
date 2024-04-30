@@ -299,4 +299,4 @@ class NoticeModel(models.Model):
         ordering = ("-id",)
     
     def __str__(self):
-        return self.title
+        return self.subject
