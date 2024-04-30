@@ -416,16 +416,20 @@ class LoginView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        is_user = UserModel.objects.filter(email=data.get("email")).exists()
-        if not is_user:
-            return Response(
-                data={"message": "The username or password do not match."}, status=400
-            )
+        email = data.get("email")
+        password = data.get("password")
+
+        try:
+            user = UserModel.objects.get(email=email)
+        except UserModel.DoesNotExist:
+            return Response(data={"message": "Email does not exist."}, status=400)
+
+        if not check_password(password, user.password):
+            return Response(data={"message": "Incorrect password."}, status=400)
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             token = serializer.validated_data
-            user = UserModel.objects.get(email=data.get("email"))
             is_admin = user.is_admin
             store = StoreModel.objects.filter(
                 seller=user
@@ -543,8 +547,7 @@ class UserView(APIView):
             #     data['password'] = None
             # When changing your password
             if (
-                new_password
-                != check_new_password
+                new_password != check_new_password
                 or not new_password
                 or not check_new_password
             ):
@@ -615,7 +618,6 @@ class UserView(APIView):
             print(e)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class ChangeUserProfile(APIView):
     def patch(self, request):
         user = get_object_or_404(UserModel, id=request.user.id)
@@ -633,6 +635,7 @@ class ChangeUserProfile(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
 
 
 # Change to front domain after deployment
