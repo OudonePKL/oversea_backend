@@ -880,10 +880,10 @@ class NoticeListSerializers(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:
         model = NoticeModel
-        fields = ["id", "title", "detail", "date", "user", "brochure", "created_at", "updated_at"]
+        fields = ["id", "subject", "user", "brochure", "created_at", "updated_at"]
 
 
 class NoticeSerializers(serializers.ModelSerializer):
     class Meta:
         model = NoticeModel
-        fields = ["id", "title", "detail", "date", "user", "brochure"]
+        fields = ["id", "subject", "user", "brochure"]
