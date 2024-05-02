@@ -54,10 +54,10 @@ class GoodsSerializer(serializers.ModelSerializer):
         return store_name
 
     def get_star_avg(self, obj):
-        review = ReviewModel.objects.filter(goods_id=obj.id).values("star")
+        review = Review.objects.filter(product_id=obj.id).values("rating")
         total = 0
         for i in review:
-            total += i["star"]
+            total += i["rating"]
 
         return math.ceil(total / review.count()) if total != 0 else 0
 
@@ -186,7 +186,7 @@ class StoreSerializer(serializers.ModelSerializer):
 
 # new review
 class ReviewSerializer(serializers.ModelSerializer):
-    # user = UserSerializer()
+    user = UserSerializer()
     class Meta:
         model = Review
         fields = "__all__"
@@ -876,8 +876,10 @@ class WebInfoSerializer(serializers.ModelSerializer):
             "background",
         ]
 
+
 class NoticeListSerializers(serializers.ModelSerializer):
     user = UserSerializer()
+
     class Meta:
         model = NoticeModel
         fields = ["id", "subject", "user", "brochure", "created_at", "updated_at"]

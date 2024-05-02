@@ -307,66 +307,66 @@ class GoodsView2(APIView):
             # return render(request, 'store/goods_detail.html', context={'goods': serializer.data})
 
 
-class GoodsViewOld(APIView):
-    @swagger_auto_schema(
-        tags=["View product list and details"], responses={200: "Success"}
-    )
-    def get(self, request, goods_id=None):
-        category_name = request.GET.get("category_name")
-        category_type = request.GET.get("category_type", "1")  # Default category type
-        if goods_id is None:
-            if category_name:
-                category = get_object_or_404(CategoryModel, name=category_name)
-                goods = GoodsModel.objects.filter(category=category)
-            else:
-                goods = GoodsModel.objects.all()
+# class GoodsView(APIView):
+#     @swagger_auto_schema(
+#         tags=["View product list and details"], responses={200: "Success"}
+#     )
+#     def get(self, request, goods_id=None):
+#         category_name = request.GET.get("category_name")
+#         category_type = request.GET.get("category_type", "1")  # Default category type
+#         if goods_id is None:
+#             if category_name:
+#                 category = get_object_or_404(CategoryModel, name=category_name)
+#                 goods = GoodsModel.objects.filter(category=category)
+#             else:
+#                 goods = GoodsModel.objects.all()
 
-            if not goods.exists():
-                return Response([], status=200)
-            if category_type == "2":
-                goods = goods.order_by("-price")
-            elif category_type == "3":
-                goods = goods.annotate(review_count=Count("reviewmodel")).order_by(
-                    "-review_count"
-                )
-            elif category_type == "4":
-                goods = goods.order_by("price")
-            elif category_type == "5":
-                goods = goods.annotate(order_count=Count("ordermodel")).order_by(
-                    "-order_count"
-                )
-            elif category_type == "6":
-                goods = goods.annotate(order_count=Count("ordermodel")).order_by(
-                    "-created_at"
-                )
-            elif category_type == "7":
-                goods = goods.filter(is_popular=True).order_by("-created_at")
-            else:
-                try:
-                    goods = goods.order_by("-price")
-                except Exception as e:
-                    print(e)
-                    return Response(
-                        {"message": str(e)}, status=status.HTTP_400_BAD_REQUEST
-                    )
+#             if not goods.exists():
+#                 return Response([], status=200)
+#             if category_type == "2":
+#                 goods = goods.order_by("-price")
+#             elif category_type == "3":
+#                 goods = goods.annotate(review_count=Count("review")).order_by(
+#                     "-review_count"
+#                 )
+#             elif category_type == "4":
+#                 goods = goods.order_by("price")
+#             elif category_type == "5":
+#                 goods = goods.annotate(order_count=Count("ordermodel")).order_by(
+#                     "-order_count"
+#                 )
+#             elif category_type == "6":
+#                 goods = goods.annotate(order_count=Count("ordermodel")).order_by(
+#                     "-created_at"
+#                 )
+#             elif category_type == "7":
+#                 goods = goods.filter(is_popular=True).order_by("-created_at")
+#             else:
+#                 try:
+#                     goods = goods.order_by("-price")
+#                 except Exception as e:
+#                     print(e)
+#                     return Response(
+#                         {"message": str(e)}, status=status.HTTP_400_BAD_REQUEST
+#                     )
 
-            serializer = GoodsSerializer(goods, many=True)
-            return Response(serializer.data)
-        else:
-            goods = get_object_or_404(GoodsModel, id=goods_id)
-            serializer = GoodsDetailSerializer(goods)
-            order_total = OrderModel.objects.filter(
-                user_id=request.user.id, goods=goods
-            ).count()
-            review_total = ReviewModel.objects.filter(
-                user_id=request.user.id, goods=goods
-            ).count()
-            result = serializer.data.copy()
-            if order_total >= review_total:
-                result["is_ordered"] = True
-            else:
-                result["is_ordered"] = False
-            return Response(result, status=200)
+#             serializer = GoodsSerializer(goods, many=True)
+#             return Response(serializer.data)
+#         else:
+#             goods = get_object_or_404(GoodsModel, id=goods_id)
+#             serializer = GoodsDetailSerializer(goods)
+#             order_total = OrderModel.objects.filter(
+#                 user_id=request.user.id, goods=goods
+#             ).count()
+#             review_total = ReviewModel.objects.filter(
+#                 user_id=request.user.id, goods=goods
+#             ).count()
+#             result = serializer.data.copy()
+#             if order_total >= review_total:
+#                 result["is_ordered"] = True
+#             else:
+#                 result["is_ordered"] = False
+#             return Response(result, status=200)
 
 
 class GoodsView(APIView):
@@ -411,13 +411,14 @@ class GoodsView(APIView):
             "1": "-created_at",
         }
 
+
         sorting_key = sorting_mapping.get(category_type, sorting_mapping["1"])
 
         if category_type == "3":
-            goods = goods.annotate(review_count=Count("reviewmodel"))
+            goods = goods.annotate(review_count=Count("review"))
 
         if category_type in ["5", "6"]:
-            goods = goods.annotate(order_count=Count("ordermodel"))
+            goods = goods.annotate(order_count=Count("order"))
 
         if category_type == "7":
             goods = goods.filter(is_popular=True)
