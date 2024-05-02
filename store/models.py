@@ -60,7 +60,6 @@ class GoodsModel(models.Model):
         null=True,
         blank=True,
         verbose_name="category",
-        default=1,
     )
     name = models.CharField(max_length=100, verbose_name="product name")
     price = models.PositiveIntegerField(default=0, verbose_name="price")
