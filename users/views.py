@@ -8,7 +8,6 @@ from django.db import transaction
 from django.http import JsonResponse
 from PIL import Image
 import io
-import requests
 from django.core.files.base import ContentFile
 import requests
 from datetime import datetime
