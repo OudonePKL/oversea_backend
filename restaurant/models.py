@@ -16,7 +16,7 @@ class Restaurant(models.Model):
     )
     name = models.CharField(
         max_length=100,
-        verbose_name="Store name",
+        verbose_name="restaurant name",
     )
     logo = models.FileField(
         null=True, blank=True, verbose_name="logo", upload_to="media/restaurant/"
@@ -24,7 +24,7 @@ class Restaurant(models.Model):
     
     address = models.CharField(
         max_length=200,
-        verbose_name="store location",
+        verbose_name="restaurant location",
     )
     
     bannerimage = models.FileField(
@@ -54,7 +54,7 @@ class Food(models.Model):
     image = models.FileField(
         null=True, blank=True, verbose_name="image", upload_to="media/restaurant/Food"
     )
-    name = models.CharField(max_length=100, verbose_name="product name")
+    name = models.CharField(max_length=100, verbose_name="menu")
     price = models.PositiveIntegerField(default=0, verbose_name="price")
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -69,9 +69,10 @@ class Table(models.Model):
         Restaurant, on_delete=models.CASCADE, verbose_name="Restaurant"
     )
     is_available = models.BooleanField(default=True)
+    qrcode = models.CharField(max_length=255, default="http://127.0.0.1:8000/admin/restaurant/table/add/$table=003")
     
 class FoodImages(models.Model):
-    foos = models.ForeignKey(
+    food = models.ForeignKey(
         Food, on_delete=models.CASCADE, verbose_name="Food"
     )
     image = models.FileField(
@@ -79,7 +80,7 @@ class FoodImages(models.Model):
     )
 
     def __str__(self):
-        return str(self.foods.name)
+        return str(self.food.name)
 
 class Order(models.Model):
     STATUS_CHOICES = (
