@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     "users",
     "store",
     "storages",
+    "restaurant"
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -215,7 +216,8 @@ JTW_AUTH_REFRESH_COOKIE = "jwt_refresh_token"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
