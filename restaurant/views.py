@@ -1,5 +1,5 @@
-from .models import CategoryModel, StoreModel, GoodsModel, ImageModel, Order, OrderItem
-from .serializers import CategorySerializer, StoreSerializer, GoodsSerializer, ImageSerializer, OrderSerializer
+from .models import CategoryModel, RestaurantModel, FoodsModel, ImageModel, Order, OrderItem
+from .serializers import CategorySerializer, RestaurantSerializer, FoodsSerializer, ImageSerializer, OrderSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, generics, viewsets, response
@@ -8,6 +8,7 @@ from .models import (
     Order,
     OrderItem,
 )
+
 from .serializers import (
     OrderSerializer,
     OrderCreateSerializer,
@@ -22,19 +23,18 @@ class CategoryListCreate(generics.ListCreateAPIView):
     queryset = CategoryModel.objects.all()
     serializer_class = CategorySerializer
 
-class StoreListCreate(generics.ListCreateAPIView):
-    queryset = StoreModel.objects.all()
-    serializer_class = StoreSerializer
+class RestaurantListCreate(generics.ListCreateAPIView):
+    queryset = RestaurantModel.objects.all()
+    serializer_class = RestaurantSerializer
 
-class GoodsListCreate(generics.ListCreateAPIView):
-    queryset = GoodsModel.objects.all()
-    serializer_class = GoodsSerializer
+class FoodsListCreate(generics.ListCreateAPIView):
+    queryset = FoodsModel.objects.all()
+    serializer_class = FoodsSerializer
 
 class ImageListCreate(generics.ListCreateAPIView):
     queryset = ImageModel.objects.all()
     serializer_class = ImageSerializer
 
-# New one
 # Order
 class OrderListView(generics.ListCreateAPIView):
     queryset = Order.objects.all()
@@ -67,6 +67,9 @@ class OrderCreateAPIView(APIView):
 
 
 class OrderUpdateAPIView(APIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    
     def put(self, request, pk):
         try:
             order = Order.objects.get(pk=pk)
@@ -81,7 +84,29 @@ class OrderUpdateAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# class OrderDeleteView(generics.DestroyAPIView):
+#     queryset = Order.objects.all()
+#     serializer_class = OrderSerializer
+    
+#     def delete(self, request, pk, format=None):
+#         try:
+#             order = Order.objects.get(pk=pk)
+#         except Order.DoesNotExist:
+#             return Response(
+#                 {"message": "Order not found"}, status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         # Delete related OrderItem instances
+#         OrderItem.objects.filter(order_id=order).delete()
+
+#         # Delete the Order instance
+#         order.delete()
+
+#         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
+
 class OrderDeleteView(generics.DestroyAPIView):
+    queryset = Order.objects.all()
+
     def delete(self, request, pk, format=None):
         try:
             order = Order.objects.get(pk=pk)

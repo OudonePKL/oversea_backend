@@ -61,31 +61,31 @@ if not DEBUG:
     PUBLIC_MEDIA_LOCATION = "media"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
 else:
-    # STATIC_URL = "/static/"
-    # STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-    # MEDIA_URL = "/media/"
-    # MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+    STATIC_URL = "/static/"
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
 
-    # STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+    STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
     # testing
     # aws settings
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-    AWS_S3_SIGNATURE_NAME = ("s3v4",)
-    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
-    AWS_S3_FILE_OVERWRITE = False
-    AWS_DEFAULT_ACL = None
-    AWS_S3_VERITY = True
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    AWS_S3_CUSTOM_DOMAIN = (
-        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-    )
-    STATIC_LOCATION = "static"
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
-    PUBLIC_MEDIA_LOCATION = "media"
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
+    # AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    # AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    # AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+    # AWS_S3_SIGNATURE_NAME = ("s3v4",)
+    # AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
+    # AWS_S3_FILE_OVERWRITE = False
+    # AWS_DEFAULT_ACL = None
+    # AWS_S3_VERITY = True
+    # DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    # AWS_S3_CUSTOM_DOMAIN = (
+    #     f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    # )
+    # STATIC_LOCATION = "static"
+    # STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
+    # PUBLIC_MEDIA_LOCATION = "media"
+    # MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
 
 # Application definition
 
@@ -108,7 +108,6 @@ INSTALLED_APPS = [
     "store",
     "storages",
     "restaurant",
-    "customer",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -217,8 +216,11 @@ JTW_AUTH_REFRESH_COOKIE = "jwt_refresh_token"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
+
+# REST_FRAMEWORK = { "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema"}
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),

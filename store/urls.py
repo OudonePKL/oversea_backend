@@ -8,7 +8,6 @@ from .views import BankAccountViewSet
 router = DefaultRouter()
 router.register(r'bank-accounts/detail', BankAccountViewSet)
 
-
 urlpatterns = [
     path("categories", views.CategoryListCreate.as_view(), name='category-list-create'),
     path("categories/<int:pk>", views.CategoryDetail.as_view(), name='category-detail'),

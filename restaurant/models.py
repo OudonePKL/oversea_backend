@@ -1,5 +1,5 @@
 from django.db import models
-from customer.models import UserModel
+# from users.models import UserModel
 from django.utils import timezone
 
 # Create your models here.
@@ -14,7 +14,7 @@ class CategoryModel(models.Model):
         return str(self.name)
 
     
-class StoreModel(models.Model):
+class RestaurantModel(models.Model):
     class Meta:
         db_table = "storerestaurant"
         verbose_name_plural = "2. Restaurant"
@@ -46,7 +46,7 @@ class StoreModel(models.Model):
     def __str__(self):
         return str(self.name)
 
-class GoodsModel(models.Model):
+class FoodsModel(models.Model):
     class Meta:
         db_table = "goodsrestaurant"
         verbose_name_plural = "4. Food list"
@@ -76,15 +76,15 @@ class ImageModel(models.Model):
         db_table = "imagerestaurant"
         verbose_name_plural = "5. Foods image list"
 
-    goods = models.ForeignKey(
-        GoodsModel, on_delete=models.CASCADE, verbose_name="Goods"
+    foods = models.ForeignKey(
+        FoodsModel, on_delete=models.CASCADE, verbose_name="Foods"
     )
     image = models.FileField(
         null=True, blank=True, verbose_name="image", upload_to="media/"
     )
 
     def __str__(self):
-        return str(self.goods.name)
+        return str(self.foods.name)
 
 # New one
 class Order(models.Model):
@@ -96,7 +96,7 @@ class Order(models.Model):
         ("Cancelled", "Cancelled"),
     )
 
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    # user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     total_prices = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Pending")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -108,7 +108,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(
-        GoodsModel, on_delete=models.DO_NOTHING, related_name="orderitem"
+        FoodsModel, on_delete=models.DO_NOTHING, related_name="orderitem"
     )
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)

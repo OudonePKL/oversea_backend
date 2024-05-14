@@ -1,20 +1,20 @@
 from rest_framework import serializers
-from .models import CategoryModel, StoreModel, GoodsModel, ImageModel, Order, OrderItem
-from customer.serializers import UserSerializer
+from .models import CategoryModel, RestaurantModel, FoodsModel, ImageModel, Order, OrderItem
+# from users.serializers import UserSerializer
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CategoryModel
         fields = '__all__'
 
-class StoreSerializer(serializers.ModelSerializer):
+class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StoreModel
+        model = RestaurantModel
         fields = '__all__'
 
-class GoodsSerializer(serializers.ModelSerializer):
+class FoodsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = GoodsModel
+        model = FoodsModel
         fields = '__all__'
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -23,10 +23,9 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 # Order
 class OrderItemSerializer(serializers.ModelSerializer):
-    product = GoodsSerializer()
+    product = FoodsSerializer()
 
     class Meta:
         model = OrderItem
@@ -35,7 +34,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
-    user = UserSerializer()
+    # user = UserSerializer()
 
     def get_items(self, obj):
         order_items = OrderItem.objects.filter(order=obj)
@@ -46,8 +45,6 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "id",
-            "user",
-            "store",
             "total_prices",
             "created_at",
             "status",
@@ -75,8 +72,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "id",
-            "user",
-            "store",
             "total_prices",
             "created_at",
             "status",
@@ -108,8 +103,6 @@ class PendingOrderSerializer(OrderSerializer):
         model = Order
         fields = [
             "id",
-            "user",
-            "store",
             "total_prices",
             "created_at",
             "status",
@@ -128,8 +121,6 @@ class DoneOrderSerializer(OrderSerializer):
         model = Order
         fields = [
             "id",
-            "user",
-            "store",
             "total_prices",
             "created_at",
             "status",
@@ -142,14 +133,11 @@ class DoneOrderSerializer(OrderSerializer):
             return None  # Skip orders that are not Done
         return data
 
-
 class ActiveOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
         fields = [
             "id",
-            "user",
-            "store",
             "total_prices",
             "created_at",
             "status",
@@ -162,14 +150,12 @@ class ActiveOrderSerializer(OrderSerializer):
             return None  # Skip orders that are not Active
         return data
 
-
 class FinishOrderSerializer(OrderSerializer):
     class Meta:
         model = Order
         fields = [
             "id",
-            "user",
-            "store",
+
             "total_prices",
             "created_at",
             "status",

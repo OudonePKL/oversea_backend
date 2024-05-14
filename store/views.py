@@ -1046,7 +1046,26 @@ class OrderUpdateBillAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# class OrderDeleteView(generics.DestroyAPIView):
+#     def delete(self, request, pk, format=None):
+#         try:
+#             order = Order.objects.get(pk=pk)
+#         except Order.DoesNotExist:
+#             return Response(
+#                 {"message": "Order not found"}, status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         # Delete related OrderItem instances
+#         OrderItem.objects.filter(order_id=order).delete()
+
+#         # Delete the Order instance
+#         order.delete()
+
+#         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
+
 class OrderDeleteView(generics.DestroyAPIView):
+    queryset = Order.objects.all()
+
     def delete(self, request, pk, format=None):
         try:
             order = Order.objects.get(pk=pk)

@@ -2,16 +2,16 @@ from django.contrib import admin
 
 from .models import (
     CategoryModel,
-    StoreModel,
-    GoodsModel,
+    RestaurantModel,
+    FoodsModel,
     ImageModel,
     Order,
     OrderItem,
 )
 
 
-@admin.register(StoreModel)
-class StoreAdmin(admin.ModelAdmin):
+@admin.register(RestaurantModel)
+class RestaurantAdmin(admin.ModelAdmin):
     """Board Admin Definition"""
 
     list_display = (
@@ -38,8 +38,8 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
-@admin.register(GoodsModel)
-class GoodsAdmin(admin.ModelAdmin):
+@admin.register(FoodsModel)
+class FoodsAdmin(admin.ModelAdmin):
     """Board Admin Definition"""
 
     list_display = (
@@ -59,9 +59,9 @@ class GoodsAdmin(admin.ModelAdmin):
 class ImageModelAdmin(admin.ModelAdmin):
     """Board Admin Definition"""
 
-    list_display = ("id", "goods", "image")
+    list_display = ("id", "foods", "image")
 
-    search_fields = ("goods",)
+    search_fields = ("foods",)
     
     
 
