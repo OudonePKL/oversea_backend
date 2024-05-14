@@ -60,32 +60,76 @@ if not DEBUG:
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
     PUBLIC_MEDIA_LOCATION = "media"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
+    
+    # RDS
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.environ.get("DATABASE_NAME"),
+            "USER": os.environ.get("DATABASE_USER"),
+            "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+            "HOST": os.environ.get("DATABASE_HOST"),
+            "PORT": "3306",
+            "OPTIONS": {
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+                "charset": "utf8mb4",
+                "use_unicode": True,
+            },
+        }
+    }
+    
 else:
-    STATIC_URL = "/static/"
-    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+    # STATIC_URL = "/static/"
+    # STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+    # MEDIA_URL = "/media/"
+    # MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
 
-    STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+    # STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
-    # testing
     # aws settings
-    # AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    # AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    # AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-    # AWS_S3_SIGNATURE_NAME = ("s3v4",)
-    # AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
-    # AWS_S3_FILE_OVERWRITE = False
-    # AWS_DEFAULT_ACL = None
-    # AWS_S3_VERITY = True
-    # DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    # AWS_S3_CUSTOM_DOMAIN = (
-    #     f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-    # )
-    # STATIC_LOCATION = "static"
-    # STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
-    # PUBLIC_MEDIA_LOCATION = "media"
-    # MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_SIGNATURE_NAME = ("s3v4",)
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    AWS_S3_VERITY = True
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_S3_CUSTOM_DOMAIN = (
+        f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    )
+    STATIC_LOCATION = "static"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
+    PUBLIC_MEDIA_LOCATION = "media"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
+    
+    
+    # DATABASES = {
+    #     "default": {
+    #         "ENGINE": "django.db.backends.mysql",
+    #         "NAME": "oversea2_db",
+    #         "USER": "root",
+    #         "PASSWORD": ""
+    #     }
+    # }
+
+    # # RDS
+    # DATABASES = {
+    #     "default": {
+    #         "ENGINE": "django.db.backends.mysql",
+    #         "NAME": os.environ.get("DATABASE_NAME"),
+    #         "USER": os.environ.get("DATABASE_USER"),
+    #         "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+    #         "HOST": os.environ.get("DATABASE_HOST"),
+    #         "PORT": "3306",
+    #         "OPTIONS": {
+    #             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+    #             "charset": "utf8mb4",
+    #             "use_unicode": True,
+    #         },
+    #     }
+    # }
 
 # Application definition
 
@@ -106,8 +150,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "users",
     "store",
-    "storages",
     "restaurant",
+    "storages",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -139,36 +183,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "oversea_backend.wsgi.application"
-
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": "oversea2_db",
-#         "USER": "root",
-#         "PASSWORD": ""
-#     }
-# }
-
-# RDS
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("DATABASE_NAME"),
-        "USER": os.environ.get("DATABASE_USER"),
-        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-        "HOST": os.environ.get("DATABASE_HOST"),
-        "PORT": "3306",
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-            "charset": "utf8mb4",
-            "use_unicode": True,
-        },
-    }
-}
 
 
 # Password validation

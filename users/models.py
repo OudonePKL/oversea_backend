@@ -68,6 +68,8 @@ class UserModel(AbstractBaseUser):
     password = models.CharField(verbose_name="password", max_length=128)
 
     is_seller = models.BooleanField(default=False, verbose_name="Seller")
+    
+    is_restaurant = models.BooleanField(default=False, verbose_name="Restaurant")
 
     is_active = models.BooleanField(default=True)
 
