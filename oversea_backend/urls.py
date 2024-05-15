@@ -13,8 +13,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", include("users.urls")),
     path("store/", include("store.urls")),
-    path("chat/", include("chat.urls")),
-    # path("restaurant/", include("restaurant.urls")),
+    # path("chat/", include("chat.urls")),
+    path("restaurant/", include("restaurant2.urls")),
     path("", include_docs_urls(title="OverSea APIs") ),
     path(
         "schema",

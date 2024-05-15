@@ -107,7 +107,7 @@ INSTALLED_APPS = [
     "users",
     "store",
     "storages",
-    # "restaurant"
+    "restaurant2"
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
