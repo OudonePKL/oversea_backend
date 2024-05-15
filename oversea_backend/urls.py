@@ -14,7 +14,7 @@ urlpatterns = [
     path("user/", include("users.urls")),
     path("store/", include("store.urls")),
     path("chat/", include("chat.urls")),
-    path("restaurant/", include("restaurant.urls")),
+    # path("restaurant/", include("restaurant.urls")),
     path("", include_docs_urls(title="OverSea APIs") ),
     path(
         "schema",
